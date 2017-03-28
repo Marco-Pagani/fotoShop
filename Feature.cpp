@@ -1,7 +1,0 @@
-void rotateRight{
-
-}
-
-void rotateLeft{
-  
-}
