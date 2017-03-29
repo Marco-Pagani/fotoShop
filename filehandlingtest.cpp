@@ -6,8 +6,8 @@
 using namespace std;
 
 //COPIED CODE WE NEED TO WRITE OUR OWN (zarb.org/~gc/html/libpng.html)
-//use a file found in the same folder as the .out for this.  
-bool isPNG;
+//use a file found in the same folder as the .out for this.  It makes things easier.
+bool isPNG = false;
 
 void read_png_file(char * file_name){  //must take char * because libpng is written in c,not c++.
   png_byte header[8];  //This will take the first 8 bytes of the file.  Libpng uses the first 8 bytes to determine if a file is a png.
