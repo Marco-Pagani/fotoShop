@@ -1,0 +1,15 @@
+To use libpng, you have to include the library when you compile.
+
+Please note that this is for linux users, and I have no idea how it works on other operating systems.
+
+First, install libpng on the system.  The terminal command is:
+sudo apt-get install libpng-dev
+
+The terminal will ask for your password.
+
+During the install, the terminal will prompt you with a yes/no question.  Type y to proceed with the install.
+
+The terminal command to compile code that uses libpng is:
+g++ -Wall example.cpp -lpng -o example.out
+
+-lpng is -l (library) png (libpng)
