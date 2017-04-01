@@ -43,7 +43,7 @@ void read_png_file(char * file_name){  //must take char * because libpng is writ
   //READING IT FINALLY OMG
   row_pointers = new png_bytep [height];  //Initializing 2d array of type png_byte.  Image will be put in here.
   for (int i = 0; i < height; i++){
-    row_pointers[i] = new png_byte [width];
+    row_pointers[i] = new png_byte [width];  //Technically this could be a memory leak.  Make sure to delete this when appropriate.
   }
 
   try{
@@ -56,7 +56,7 @@ void read_png_file(char * file_name){  //must take char * because libpng is writ
   if(readTrue){
     cout << "png_read_image worked" << endl;
   }
-  
+
   fclose(x);
 }
 
