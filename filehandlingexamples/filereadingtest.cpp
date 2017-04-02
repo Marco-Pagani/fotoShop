@@ -3,6 +3,8 @@
 #include <stdio.h>  //Used for FILE, fopen
 using namespace std;
 
+//IMPORTANT NOTE: THIS PROGRAM CURRENTLY COMPLETELY MESSES UP THE IMAGE.  BUT AT LEAST IT READS AND WRITES AN IMAGE.
+
 //COPIED CODE WE NEED TO WRITE OUR OWN (zarb.org/~gc/html/libpng.html) [source]
 //There is no error handling in this code, as it is an example and for instructional use.
 bool isPNG = false;
@@ -41,9 +43,9 @@ void read_png_file(char * file_name){  //must take char * because libpng is writ
   }
 
   //READING IT FINALLY OMG
-  row_pointers = new png_bytep [height];  //Initializing 2d array of type png_byte.  Image will be put in here.
-  for (int i = 0; i < height; i++){
-    row_pointers[i] = new png_byte [width];  //Technically this could be a memory leak.  Make sure to delete this when appropriate.
+  row_pointers = new png_bytep [height];
+  for(int i = 0; i < height; i++){
+    row_pointers[i] = new png_byte [width];
   }
 
   try{
@@ -60,11 +62,35 @@ void read_png_file(char * file_name){  //must take char * because libpng is writ
   fclose(x);
 }
 
+void write_png_file(char * outputFile){
+  //http://www.libpng.org/pub/png/book/chapter15.html was of especial use.
+  FILE * output = fopen(outputFile, "wb");  //Creates new file to write to.
+  png_structp write_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);  //Creates png and info struct for writing.
+  png_infop wInfo_ptr = png_create_info_struct(write_ptr);
+  png_init_io(write_ptr, output);  //Initializes output.
+  png_set_IHDR(write_ptr, wInfo_ptr, width, height, bit_depth, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);  //Sets basic image parameters.
+  png_write_info(write_ptr, wInfo_ptr);  //Writes all non-image data to file.
+  cout << "got up to png_write_image" << endl;
+  png_write_image(write_ptr, row_pointers);  //Writes image data to file.
+  cout << "got up to png_write_end" << endl;
+  png_write_end(write_ptr, NULL); //Finishes writing file.  Change NULL to the info pointer if you want comments or time.
+  cout << "got up to deleting array" << endl;
+  // for(int i = 0; i < height; i++){  //Deletes 2d array so no memory leak.  This currently causes the program to crash.
+  //   delete [] row_pointers[i];
+  // }
+  // delete [] row_pointers;
+  cout << "got up to fclose()" << endl;
+  fclose(output);
+
+  cout << "well, it didn't crash" << endl;
+
+}
 
 int main(){
   char file[100];  //file name is put in here.  Must be char * because libpng is in c.
   cout << "Gimme dat file name" << endl;
   cin >> file;
   read_png_file(file);
+  write_png_file(file);
   return 0;
 }
