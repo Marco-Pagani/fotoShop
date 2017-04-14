@@ -1,26 +1,17 @@
 
 
-//class declaration
-class algorithms
-{
-	public:
-			static png_byte convertToHSL(int r, int g, int b);
-			static png_byte convertToRGB(double x, double y, double z);
-			static png_bytep* adjustContrast (png_bytep* image, int contrast);
-}
+// these methods will pe part of the picture class
+
 
 //this method converts from RGB to HSL
 //return an int array instead, please fix
-int algorithms::convertToHSL(int r, int g, int b)
+void convertToHSL(int& r, int& g, int& b, double hue, double sat, double lum)
 {
   double rP = r / 255.0;
   double gP = g / 255.0;
   double bP = b / 255.0;
   double max = 0.0;
   double min = 0.0;
-  double hue = 0.0;
-  double sat = 0.0;
-  double lum = 0.0;
   
   double RGB [3] = {rP, gP, bP};
   double HSL [3] = {hue, sat, lum};
@@ -93,8 +84,8 @@ int algorithms::convertToHSL(int r, int g, int b)
 
 
 //this method converts from HSL to RGB
-//returns an int array instead, please fix
-png_byte algorithms::convertToRGB(double x, double y, double z)
+
+void convertToRGB(double h, double s, double l, int& r, int& g, int& b)
 {
   double hue = x;
   double sat = y;
@@ -168,16 +159,6 @@ png_byte algorithms::convertToRGB(double x, double y, double z)
   }
 
 
-  //this method adjusts the contrast
-  //incomplete method
-png_bytep* adjustContrast(png_bytep* image, int x)
-{
-	int contrast = x;
-	//CCF is Contrast Correction Factor
-	double CCF = 0.0;
-
-}
-
 
 
 
@@ -197,9 +178,11 @@ int x, y;
 int width, height;
 int r, g, b;
 
-void changeHue(png_btye* image, int hueVal) {
+void changeHue(png_byte* image, int hueVal) {
   for (y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
@@ -213,9 +196,11 @@ void changeHue(png_btye* image, int hueVal) {
   }
 }
 
-void changeSat(png_btye* image, int satVal) {
+void changeSat(png_byte* image, int satVal) {
   for (y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
@@ -229,9 +214,11 @@ void changeSat(png_btye* image, int satVal) {
   }
 }
 
-void changeLum(png_btye* image, int lumVal) {
+void changeLum(png_byte* image, int lumVal) {
   for (y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
