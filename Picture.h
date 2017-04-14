@@ -16,7 +16,11 @@ private:
 public:
 	/*libpng works by reading in the file data, applying the actual image data
 	to an array, and then printing out that array on a separate file.*/
-	Picture(char * inputFile);
+	Picture();
+	Picture(char *inputFile);
+
+	void readPNGFile(char *fileName);
+	void writePNGFile(char *fileName);
 	
 	void convertToHSL(int& r, int& g, int& b, double hue, double sat, double lum);
 	void convertToRGB(double hue, double sat, double lum, int& r, int& g, int& b);
@@ -28,10 +32,7 @@ public:
 	void shadows(int value);
 	void saturation(int value);
 	void hue(int value);
-	void warmth(int value);
-	
-	void writePNGFile(char *outputFile);
-	
+	void warmth(int value);	
 };
 
 #endif
