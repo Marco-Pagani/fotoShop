@@ -87,21 +87,17 @@ void convertToHSL(int& r, int& g, int& b, double hue, double sat, double lum)
 
 void convertToRGB(double h, double s, double l, int& r, int& g, int& b)
 {
-  double hue = x;
-  double sat = y;
-  double lum = z;
-  double r = 0.0;
-  double g = 0.0;
-  double b = 0.0;
+  double rD = r;
+  double gD = g;
+  double bD = b;
   double temp_1 = 0.0;
   double temp_2 = 0.0;
   double temp_r = 0.0;
   double temp_g = 0.0;
   double temp_b = 0.0;
   double HSL [3] = {hue, sat, lum};
-  double RGB [3] = {r, g ,b};
+  double RGB [3] = {rD, gD, bD};
   double temp [3] = {temp_r, temp_g, temp_b};
-  
   
   if (sat == 0)
   {
@@ -156,13 +152,17 @@ void convertToRGB(double h, double s, double l, int& r, int& g, int& b)
     }
     
     RGB[i] = RGB[i] * 255;
-  }
-
-
-
-
-
+  } 
+    r = (int)rD;
+    g = (int)gD;
+    b = (int)bD;
 }
+
+
+
+
+
+
 
 //Matthew Sullivan
 //These functions are not the final functions. Still waiting on what the arguments need to be
