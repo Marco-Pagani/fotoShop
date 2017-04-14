@@ -18,8 +18,8 @@ public:
 	to an array, and then printing out that array on a separate file.*/
 	Picture(char * inputFile);
 	
-	void convertToHSL(int& r, int& g, int& b, double h, double s, double l);
-	void convertToRGB(double h, double s, double l, int& r, int& g, int& b);
+	void convertToHSL(int& r, int& g, int& b, double hue, double sat, double lum);
+	void convertToRGB(double hue, double sat, double lum, int& r, int& g, int& b);
 	
 	void brightness(int value);
 	void contrast(int value);
