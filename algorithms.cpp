@@ -1,17 +1,11 @@
 
 
-//class declaration
-class algorithms
-{
-	public:
-			static png_byte convertToHSL(int r, int g, int b);
-			static png_byte convertToRGB(double x, double y, double z);
-			static png_bytep* adjustContrast (png_bytep* image, int contrast);
-}
+// these methods will pe part of the picture class
+
 
 //this method converts from RGB to HSL
 //return an int array instead, please fix
-int algorithms::convertToHSL(int r, int g, int b)
+void convertToHSL(int& r, int& g, int& b, double h, double s, double l)
 {
   double rP = r / 255.0;
   double gP = g / 255.0;
@@ -93,8 +87,8 @@ int algorithms::convertToHSL(int r, int g, int b)
 
 
 //this method converts from HSL to RGB
-//returns an int array instead, please fix
-png_byte algorithms::convertToRGB(double x, double y, double z)
+
+void convertToRGB(double h, double s, double l, int& r, int& g, int& b)
 {
   double hue = x;
   double sat = y;
@@ -167,16 +161,6 @@ png_byte algorithms::convertToRGB(double x, double y, double z)
     RGB[i] = RGB[i] * 255;
   }
 
-
-  //this method adjusts the contrast
-  //incomplete method
-png_bytep* adjustContrast(png_bytep* image, int x)
-{
-	int contrast = x;
-	//CCF is Contrast Correction Factor
-	double CCF = 0.0;
-
-}
 
 
 
