@@ -185,6 +185,8 @@ png_bytep* adjustContrast(png_bytep* image, int x)
 
 //Matthew Sullivan
 //These functions are not the final functions. Still waiting on what the arguments need to be
+//As of now, these take in the image along with a value the user wants to change either the
+//hue, saturation, or luminosity and changes these by the value given by the user
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
