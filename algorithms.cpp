@@ -183,5 +183,66 @@ png_bytep* adjustContrast(png_bytep* image, int x)
 
 }
 
+//Matthew Sullivan
+//These functions are not the final functions. Still waiting on what the arguments need to be
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+
+int x, y;
+int width, height;
+int r, g, b;
+
+void changeHue(png_btye* image, int hueVal) {
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      double HSL[3] = convertToHSL(r, g, b);
+      HSL[0] = HSL[0] + hueVal;
+      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
+      ptr[0] = RGB[0];
+      ptr[1] = RGB[1];
+      ptr[2] = RGB[2];
+    }
+  }
+}
+
+void changeSat(png_btye* image, int satVal) {
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      double HSL[3] = convertToHSL(r, g, b);
+      HSL[1] = HSL[1] + satVal;
+      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
+      ptr[0] = RGB[0];
+      ptr[1] = RGB[1];
+      ptr[2] = RGB[2];
+    }
+  }
+}
+
+void changeLum(png_btye* image, int lumVal) {
+  for (y = 0; y < height; y++) {
+    for (x = 0; x < width; x++) {
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      double HSL[3] = convertToHSL(r, g, b);
+      HSL[2] = HSL[2] + lumVal;
+      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
+      ptr[0] = RGB[0];
+      ptr[1] = RGB[1];
+      ptr[2] = RGB[2];
+    }
+  }
+}
+
+
 
 
