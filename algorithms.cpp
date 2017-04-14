@@ -5,16 +5,13 @@
 
 //this method converts from RGB to HSL
 //return an int array instead, please fix
-void convertToHSL(int& r, int& g, int& b, double h, double s, double l)
+void convertToHSL(int& r, int& g, int& b, double hue, double sat, double lum)
 {
   double rP = r / 255.0;
   double gP = g / 255.0;
   double bP = b / 255.0;
   double max = 0.0;
   double min = 0.0;
-  double hue = 0.0;
-  double sat = 0.0;
-  double lum = 0.0;
   
   double RGB [3] = {rP, gP, bP};
   double HSL [3] = {hue, sat, lum};
