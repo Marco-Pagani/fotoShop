@@ -197,9 +197,11 @@ int x, y;
 int width, height;
 int r, g, b;
 
-void changeHue(png_btye* image, int hueVal) {
+void changeHue(png_byte* image, int hueVal) {
   for (y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
@@ -213,9 +215,11 @@ void changeHue(png_btye* image, int hueVal) {
   }
 }
 
-void changeSat(png_btye* image, int satVal) {
+void changeSat(png_byte* image, int satVal) {
   for (y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
@@ -229,9 +233,11 @@ void changeSat(png_btye* image, int satVal) {
   }
 }
 
-void changeLum(png_btye* image, int lumVal) {
+void changeLum(png_byte* image, int lumVal) {
   for (y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
