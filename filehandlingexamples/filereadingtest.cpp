@@ -4,10 +4,9 @@
 #include <cstdlib>
 using namespace std;
 
-//IMPORTANT NOTE: THIS PROGRAM CURRENTLY COMPLETELY MESSES UP THE IMAGE.  BUT AT LEAST IT READS AND WRITES AN IMAGE.
+//TODO error handling, deleting array.
 
 //COPIED CODE WE NEED TO WRITE OUR OWN (zarb.org/~gc/html/libpng.html) [source]
-//There is no error handling in this code, as it is an example and for instructional use.
 bool isPNG = false;
 bool readTrue = true;
 int width, height;
@@ -49,9 +48,35 @@ void read_png_file(char * file_name){  //must take char * because libpng is writ
   bit_depth = png_get_bit_depth(png_ptr, info_ptr);  /*Bit depth is the amount of bits needed to contain information
   about 1 pixel of an image.  RGB is normally 8.*/
 
-  //Delete if this don't work.
-  // number_of_passes = png_set_interlace_handling(png_ptr);
-  // png_read_update_info(png_ptr, info_ptr);
+  if(bit_depth == 16){ //Changes anything with bit depth of 16 to RGB.
+    png_set_strip_16(png_ptr);
+  }
+
+  if(color_type == PNG_COLOR_TYPE_PALETTE)  //Changes color_type from palette to rgb.
+   png_set_palette_to_rgb(png_ptr);
+
+  if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8){  //Changes grayscale images with less than 8 bits to 8 bits.
+   png_set_expand_gray_1_2_4_to_8(png_ptr);
+  }
+
+  if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)){  //If image has transparency info, adds alpha channel.
+    png_set_tRNS_to_alpha(png_ptr);
+  }
+
+   //If there is no alpha channel, adds alpha channel and fills it with value 255.  (0xFF in hexidecimal.)
+  if(color_type == PNG_COLOR_TYPE_RGB ||
+     color_type == PNG_COLOR_TYPE_GRAY ||
+     color_type == PNG_COLOR_TYPE_PALETTE){
+       png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+  }
+
+  if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA){
+    png_set_gray_to_rgb(png_ptr);
+  }
+
+
+  png_read_update_info(png_ptr, info_ptr);
+
 
   if(width != 0 && height != 0){  //prints image width and height.
     cout << "Width is " << width << "!" << endl;
@@ -83,7 +108,7 @@ void write_png_file(char * outputFile){
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);  //Creates png and info struct for writing.
   info_ptr = png_create_info_struct(png_ptr);
   png_init_io(png_ptr, output);  //Initializes output.
-  png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);  //Sets basic image parameters.
+  png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);  //Sets basic image parameters.
   png_write_info(png_ptr, info_ptr);  //Writes all non-image data to file.
   cout << "got up to png_write_image" << endl;
   png_write_image(png_ptr, row_pointers);  //Writes image data to file.
