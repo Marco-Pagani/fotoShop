@@ -14,10 +14,10 @@ void read_png_file(char * fileName)
   png_byte pngHeader[8];  
 
   // Open a file based on the name passed in
-  FILE * x = fopen(fileName, "rb");
+  FILE *file = fopen(fileName, "rb");
 
   // Read in the header signature of the PNG file. 
-  fread(header, 1, 8, x); 
+  fread(pngHeader, 1, 8, file); 
 
   // Check if the file opened is indeed a PNG file
   /* png_sig_cmp is a library function that checks if a file opened is a PNG picture based on its header. 
@@ -43,8 +43,7 @@ void read_png_file(char * fileName)
   // Initalize the second structure to contain the information from the PNG picture
   info_ptr = png_create_info_struct(png_ptr); 
 
-
-  png_init_io(png_ptr, x);  // Passes file pointer to function that sets up input code.
+  png_init_io(png_ptr, file);  // Passes file pointer to function that sets up input code.
 
   png_set_sig_bytes(png_ptr, 8);  // Re-establishes the header portion of the pointer file. This is used to counter reading in the first 8 bits at the beginning
 
@@ -76,28 +75,40 @@ void read_png_file(char * fileName)
   fclose(x);   // Close the file
 }
 
-void write_png_file(char * outputFile){
-  //http://www.libpng.org/pub/png/book/chapter15.html was of especial use.
-  FILE * output = fopen(outputFile, "wb");  //Creates new file to write to.
-  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);  //Creates png and info struct for writing.
-  info_ptr = png_create_info_struct(png_ptr);
-  png_init_io(png_ptr, output);  //Initializes output.
-  png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);  //Sets basic image parameters.
-  png_write_info(png_ptr, info_ptr);  //Writes all non-image data to file.
-  cout << "got up to png_write_image" << endl;
-  png_write_image(png_ptr, row_pointers);  //Writes image data to file.
-  cout << "got up to png_write_end" << endl;
-  png_write_end(png_ptr, NULL); //Finishes writing file.  Change NULL to the info pointer if you want comments or time.
-  cout << "got up to deleting array" << endl;
-  // for(int i = 0; i < height; i++){  //Deletes 2d array so no memory leak.  This currently causes the program to crash.
-  //   delete [] row_pointers[i];
-  // }
-  // delete [] row_pointers;
-  cout << "got up to fclose()" << endl;
-  fclose(output);
 
-  cout << "well, it didn't crash" << endl;
+/* This function opens up a file and writes a PNG file to it. The method takes in a character array as input that will be used to represent the file name (a character
+array must be used instead of a string because libpng is written in C and cannot function with strings). The function contains no ouutput. */
+void write_png_file(char *fileName) 
+{
+	// Open up a new file that will be used to write a PNG picture to
+	FILE *file = fopen(fileName, "wb"); 
 
+	/*Two structures need to be created as part of the libpng library. One structure will be used to hold the information from the picture and the 
+	other structure will be used to write the information to the file.*/
+
+	// Establish the struct for writing the PNG image
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL); 
+	// Establish the struct for handling the information of the PNG image
+	info_ptr = png_create_info_struct(png_ptr);
+
+	png_init_io(png_ptr, file);  // Initializes file to be written to
+
+	// Set basic parameters for the image
+	png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);  
+	
+	png_write_info(png_ptr, info_ptr);  // Write picture information to the file (excluding the pixel data)
+	
+	png_write_image(png_ptr, row_pointers);  // Write picture pixel data to the file
+	
+	png_write_end(png_ptr, NULL);   // Finishes writing to the end of the file
+
+	// for(int i = 0; i < height; i++){  //Deletes 2d array so no memory leak.  This currently causes the program to crash.
+	//   delete [] row_pointers[i];
+	// }
+	// delete [] row_pointers;
+
+
+	fclose(file);   // Closes the file
 }
 
 int main(){
