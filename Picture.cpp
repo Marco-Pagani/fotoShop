@@ -5,10 +5,22 @@
 
 using namespace std;
 
+// Default constructor that sets everything to null
+Picture::Picture()
+{
+	int width = NULL;
+	int height = NULL;
+	png_byte color_type = NULL;
+	png_byte bit_depth = NULL;
+	png_bytep * row_pointers = NULL;
+	png_structp png_ptr = NULL;
+	png_infop info_ptr = NULL;
+}
+
 /* Function to open up a PNG picture file and read in its information. This method takes in a character array as input to represent the name of the file that is to be
 opened (the input must be a character array since the libpng library is written in C and cannot handle strings). The function contains no output. It simply opens the PNG
 file, and creates a Picture object based on the information inside the file. */
-void read_png_file(char * fileName)
+void Picture::readPNGFile(char *fileName)
 {  
   	// Create an array to read in the first 8 bits of a png file. The first 8 bits represents the header portion for a PNG picture.
   	png_byte pngHeader[8];  
@@ -107,7 +119,7 @@ void read_png_file(char * fileName)
 
 /* This function opens up a file and writes a PNG file to it. The method takes in a character array as input that will be used to represent the file name (a character
 array must be used instead of a string because libpng is written in C and cannot function with strings). The function contains no ouutput. */
-void write_png_file(char *fileName) 
+void Picture:writePNGFile(char *fileName) 
 {
 	// Open up a new file that will be used to write a PNG picture to
 	FILE *file = fopen(fileName, "wb"); 
@@ -135,7 +147,6 @@ void write_png_file(char *fileName)
 	//   delete [] row_pointers[i];
 	// }
 	// delete [] row_pointers;
-
 
 	fclose(file);   // Closes the file
 	return;
