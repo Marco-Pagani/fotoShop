@@ -5,16 +5,8 @@
 
 using namespace std;
 
-// Default constructor that sets everything to null
 Picture::Picture()
 {
-	int width = NULL;
-	int height = NULL;
-	png_byte color_type = NULL;
-	png_byte bit_depth = NULL;
-	png_bytep * row_pointers = NULL;
-	png_structp png_ptr = NULL;
-	png_infop info_ptr = NULL;
 }
 
 /* Function to open up a PNG picture file and read in its information. This method takes in a character array as input to represent the name of the file that is to be
@@ -163,7 +155,7 @@ void Picture::writePNGFile(char * fileName)
 
 void Picture::convertToHSV(int r, int g, int b, double& hue, double& sat, double& val)
 {
-	float RGB[3] = {r / 255.0, g / 255.0, b / 255.0};
+	double RGB[3] = {r / 255.0, g / 255.0, b / 255.0};
 	float min, max, diff;
 	
 	//find min / max
@@ -272,13 +264,12 @@ void Picture::convertToRGB(double hue, double sat, double val, int& r, int& g, i
 }
 
 void Picture::brightness(int value){
-	process(){
 	for (int y=0; y<height; y++) {
                 png_byte* row = row_pointers[y];
                 for (int x=0; x<width; x++) {
                         png_byte* ptr = &(row[x*4]);
                         printf("%i, %i, %i\n", ptr[0], ptr[1],ptr[2]);
-                        float h, s, v;
+                        double h = 0, s = 0, v = 0;
                         convertToHSV(ptr[0], ptr[1], ptr[2],h,s,v);
                         //printf("%i, %i, %i, %f, %f, %f \n", ptr[0], ptr[1],ptr[2],h,s,v);
                         v += (value / 100.0);
@@ -300,7 +291,7 @@ void Picture::brightness(int value){
         }
 	
 }
-}
+
 
 int main(){
   char fileName[100];  //file name is put in here.  Must be char * because libpng is in c.
