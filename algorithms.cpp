@@ -159,12 +159,54 @@ void convertToRGB(double h, double s, double l, int& r, int& g, int& b)
 }
 
 //this method will adjust the contrast
+//int c is to be between the values of -255 to 255. "-" reduces contrast,
+// "+" increases it
 void adjustContrast(int c)
 {
+  double cFactor = (259.0(c + 255.0)) / (255.0(259 - c.0));
   
+    for (y = 0; y < height; y++) 
+    {
+    png_byte* row = row_pointers[y];
+    for (x = 0; x < width; x++) 
+    {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      
+      r = int(cFactor(r - 128) + 128);
+      g = int(cFactor(g - 128) + 128);
+      b = int(cFactor(b - 128) + 128);
+      
+      for (int i=0; i<RGB.sizeOf(); i++)
+      {
+        RGB[i] = clamp(RGB[i])
+      }
+      
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+      
+    }
 }
 
-
+//this method checks if the color values are between 0 and 255
+int clamp(int x)
+{
+  if (x < 0)
+  {
+    return 0;
+  }
+  else if (x > 255)
+  {
+    return 255;
+  }
+  else
+  {
+    return x;
+  }
+}
 
 
 
@@ -183,8 +225,9 @@ void adjustContrast(int c)
 int x, y;
 int width, height;
 int r, g, b;
+int RGB = [r, g, b];
 
-void hue(int hueVal) {
+void changeHue(png_byte* image, int hueVal) {
   for (y = 0; y < height; y++) {
     png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
@@ -192,17 +235,17 @@ void hue(int hueVal) {
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
-      convertToHSL(r, g, b, h, s, l);
-      h = h + hueVal;
-      convertToRGB(h, s, l, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
+      double HSL[3] = convertToHSL(r, g, b);
+      HSL[0] = HSL[0] + hueVal;
+      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
+      ptr[0] = RGB[0];
+      ptr[1] = RGB[1];
+      ptr[2] = RGB[2];
     }
   }
 }
 
-void saturation(int satVal) {
+void changeSat(png_byte* image, int satVal) {
   for (y = 0; y < height; y++) {
     png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
@@ -210,17 +253,17 @@ void saturation(int satVal) {
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
-      convertToHSL(r, g, b, h, s, l);
-      s = s + satVal;
-      convertToRGB(h, s, l, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
+      double HSL[3] = convertToHSL(r, g, b);
+      HSL[1] = HSL[1] + satVal;
+      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
+      ptr[0] = RGB[0];
+      ptr[1] = RGB[1];
+      ptr[2] = RGB[2];
     }
   }
 }
 
-void brightness(int lumVal) {
+void changeLum(png_byte* image, int lumVal) {
   for (y = 0; y < height; y++) {
     png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
@@ -228,23 +271,16 @@ void brightness(int lumVal) {
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
-      convertToHSL(r, g, b, h, s, l);
-      l = l + lumVal;
-      convertToRGB(h, s, l, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
+      double HSL[3] = convertToHSL(r, g, b);
+      HSL[2] = HSL[2] + lumVal;
+      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
+      ptr[0] = RGB[0];
+      ptr[1] = RGB[1];
+      ptr[2] = RGB[2];
     }
   }
 }
 
-void warmth(int warVal) {
-  for (y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      ptr[0] = ptr[0] + warVal;
-      ptr[2] = ptr[2] - warVal;
-    }
-  }
-}
+
+
+
