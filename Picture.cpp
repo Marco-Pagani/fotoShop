@@ -20,7 +20,7 @@ Picture::Picture()
 /* Function to open up a PNG picture file and read in its information. This method takes in a character array as input to represent the name of the file that is to be
 opened (the input must be a character array since the libpng library is written in C and cannot handle strings). The function contains no output. It simply opens the PNG
 file, and creates a Picture object based on the information inside the file. */
-void Picture::readPNGFile(char *fileName)
+void Picture::readPNGFile(char* fileName)
 {  
   	// Create an array to read in the first 8 bits of a png file. The first 8 bits represents the header portion for a PNG picture.
   	png_byte pngHeader[8];  
@@ -112,14 +112,15 @@ void Picture::readPNGFile(char *fileName)
     	readTrue = false;
   	}
 
-  	fclose(x);   // Close the file
+  	fclose(file);   // Close the file
   	return;
+}
 }
 
 
 /* This function opens up a file and writes a PNG file to it. The method takes in a character array as input that will be used to represent the file name (a character
 array must be used instead of a string because libpng is written in C and cannot function with strings). The function contains no ouutput. */
-void Picture:writePNGFile(char *fileName) 
+void Picture::writePNGFile(char * fileName) 
 {
 	// Open up a new file that will be used to write a PNG picture to
 	FILE *file = fopen(fileName, "wb"); 
@@ -156,9 +157,9 @@ int main(){
   char fileName[100];  //file name is put in here.  Must be char * because libpng is in c.
   cout << "Please enter a file name to open: ";
   cin >> fileName;
-  read_png_file(fileName);
+  Picture pleaseGodWork (fileName);
   cout << "Please enter a file name to save the file: ";
-  cin >> file;
-  write_png_file(fileName);
+  cin >> fileName;
+  pleaseGodWork->writePNGFile(fileName);
   return 0;
 }
