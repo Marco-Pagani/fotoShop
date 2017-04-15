@@ -158,6 +158,12 @@ void convertToRGB(double h, double s, double l, int& r, int& g, int& b)
     b = (int)bD;
 }
 
+//this method will adjust the contrast
+void adjustContrast(int c)
+{
+  
+}
+
 
 
 
