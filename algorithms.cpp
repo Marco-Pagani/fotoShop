@@ -184,7 +184,7 @@ int x, y;
 int width, height;
 int r, g, b;
 
-void changeHue(png_byte* image, int hueVal) {
+void hue(int hueVal) {
   for (y = 0; y < height; y++) {
     png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
@@ -192,17 +192,17 @@ void changeHue(png_byte* image, int hueVal) {
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
-      double HSL[3] = convertToHSL(r, g, b);
-      HSL[0] = HSL[0] + hueVal;
-      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
-      ptr[0] = RGB[0];
-      ptr[1] = RGB[1];
-      ptr[2] = RGB[2];
+      convertToHSL(r, g, b, h, s, l);
+      h = h + hueVal;
+      convertToRGB(h, s, l, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
     }
   }
 }
 
-void changeSat(png_byte* image, int satVal) {
+void saturation(int satVal) {
   for (y = 0; y < height; y++) {
     png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
@@ -210,17 +210,17 @@ void changeSat(png_byte* image, int satVal) {
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
-      double HSL[3] = convertToHSL(r, g, b);
-      HSL[1] = HSL[1] + satVal;
-      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
-      ptr[0] = RGB[0];
-      ptr[1] = RGB[1];
-      ptr[2] = RGB[2];
+      convertToHSL(r, g, b, h, s, l);
+      s = s + satVal;
+      convertToRGB(h, s, l, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
     }
   }
 }
 
-void changeLum(png_byte* image, int lumVal) {
+void brightness(int lumVal) {
   for (y = 0; y < height; y++) {
     png_byte* row = row_pointers[y];
     for (x = 0; x < width; x++) {
@@ -228,16 +228,23 @@ void changeLum(png_byte* image, int lumVal) {
       r = ptr[0];
       g = ptr[1];
       b = ptr[2];
-      double HSL[3] = convertToHSL(r, g, b);
-      HSL[2] = HSL[2] + lumVal;
-      double RGB[3] = convertToRGB(HSL[0], HSL[1], HSL[2]);
-      ptr[0] = RGB[0];
-      ptr[1] = RGB[1];
-      ptr[2] = RGB[2];
+      convertToHSL(r, g, b, h, s, l);
+      l = l + lumVal;
+      convertToRGB(h, s, l, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
     }
   }
 }
 
-
-
-
+void warmth(int warVal) {
+  for (y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      ptr[0] = ptr[0] + warVal;
+      ptr[2] = ptr[2] - warVal;
+    }
+  }
+}
