@@ -157,9 +157,10 @@ int main(){
   char fileName[100];  //file name is put in here.  Must be char * because libpng is in c.
   cout << "Please enter a file name to open: ";
   cin >> fileName;
-  Picture pleaseGodWork (fileName);
+  Picture pleaseGodWork;
+  pleaseGodWork.readPNGFile(fileName);
   cout << "Please enter a file name to save the file: ";
   cin >> fileName;
-  pleaseGodWork->writePNGFile(fileName);
+  pleaseGodWork.writePNGFile(fileName);
   return 0;
 }
