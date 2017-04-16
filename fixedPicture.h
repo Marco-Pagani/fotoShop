@@ -32,7 +32,7 @@ public:
 	void changeHighlights(int value);		//done
 	void changeShadows(int value);			//done
 	void changeSat(int value);			//done
-	void changeHue(int hueVal);				//done
+	void changeHue(int value);				//done
 	void changeTemp(int value);			//done
 	
 	void verticalFlip();

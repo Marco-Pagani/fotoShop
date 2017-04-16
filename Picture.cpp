@@ -10,7 +10,7 @@ Picture::Picture() {}
 /*  Function to open up a PNG picture file and read in its information. This met
  * hod takes in a character array as input to represent the name of the file tha
  * t is to be
-opened (the input must be a character array since the libpng libra
+opened  (the input must be a character array since the libpng libra
  * ry is written in C and cannot handle strings). The function contains no outpu
  * t. It simply opens the PNG
 file, and creates a Picture object based on the in
