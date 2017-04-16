@@ -393,35 +393,57 @@ void Picture::changeHue(int value){
   }
 }
 
-//Can only go from 0 to 1, the value is a percentage so must be inbetween -1 and 1.
-void Picture::changeSat(int value) {
-  if(value > 100 || value < -100){
-    cout << "INVALID" << endl;
-    return;
-  }
-  double valdecimal = (double)value / 100.0;
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      s = s + valdecimal;
-      //anything set over the possible max is made to be exactly at the min/max, which in this case is 0 and 1.
-      if(s > 1.0)
-        s = 1.0;
-      if(s < 0)
-        s = 0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
+/* Function to change the saturation of a picture. The function receives an integer as input to represent how much the saturation of the picture is to be changed.
+The method contains no output. Saturation is represented as a percentage. Based on the interface integrated with this class, the value passed in will be between 
+-100 and 100. */
+void Picture::changeSat(int value) 
+{
+	// If the value passed in is 0, no changes need to be made
+  	if(value == 0)
+  		return;
+
+  	double valdecimal = (double)value / 100.0;   // Convert the value of the integer passed in into a decimal between 0 and 1
+
+  	// Initalize variables to hold the red-green-blue values, as well as the hue-saturation-value values
+  	int r, g, b;
+  	double h, s, v;
+
+  	// Loop through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+    	png_byte* row = row_pointers[y];   // Retreive the information of each row as the loop iterates
+
+    	// Create a second loop to iterate through each pixel within each row
+    	for (int x = 0; x < width; x++) 
+    	{
+    		// Retreive the color values of each pixel by reading in the next four values
+      		png_byte* ptr = &(row[x*4]);
+
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+
+      		convertToHSV(r, g, b, h, s, v);   // Convert the red-blue-green values to hue-saturation-value
+
+      		s = s + valdecimal;   // Update the value of saturation based on the input passed in
+     
+      		// The value of saturation is a percentage between a range of 0 and 1
+      		// If the new value of saturation is above 1, reset its value to the highest possible saturation value
+      		if(s > 1.0)
+        		s = 1.0;
+        	// If the new value of saturation is negative, reset its value to the lowest possible saturation value
+      		if(s < 0)
+        		s = 0;
+
+        	// Convert the hue-saturation-value information (with the new value for saturation) back to red-green-blue
+      		convertToRGB(h, s, v, r, g, b);   
+     		
+     		// Reassign the values of red, green, and blue for each pixel based on the newly calculated saturation
+     		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+   		}
+  	}
 }
 
 
