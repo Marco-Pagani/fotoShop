@@ -394,8 +394,10 @@ void Picture::changeHue(int value){
       		ptr[0] = r;
       		ptr[1] = g;
       		ptr[2] = b;
-    }
-  }
+    	}
+  	}
+
+  return;
 }
 
 
@@ -450,6 +452,8 @@ void Picture::changeSat(int value)
       		ptr[2] = b;
    		}
   	}
+
+  	return;
 }
 
 
@@ -505,47 +509,73 @@ void Picture::changeBrightness(int value)
       		ptr[1] = g;
       		ptr[2] = b;
     	}
-  	}	
+  	}
+
+  	return;	
 }
 
 
-//this method will adjust the contrast
-//int value is to be between the values of -255 to 255. "-" reduces contrast,
-// "+" increases it
-void Picture::changeContrast(int value){
-  if(value < -255 || value > 255){
-    //cout << "Error" << endl;
-    return;
-  }
-  double cFactor = (259.0*((double)value + 255.0)) / (255.0*(259.0 - (double)value));
-  int r, g, b;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
+/* Function to adjust the contrast of a picture. The method retreives an integer as input to represent how much the contrast value is to be changed. The function
+contains no output. The value range of contrast exists between -255 and 255. The interface interlaced with this algorithm is restricted to only pass in a value 
+between -255 and 255.*/
+void Picture::changeContrast(int value)
+{
+  	if(value == 0)
+  		return;
+  
+  	// Formula that calculates the value for how much the contrast should be adjusted
+  	double cFactor = (259.0*((double)value + 255.0)) / (255.0*(259.0 - (double)value));
+
+  	int r, g, b;   // Initalize variables to hold the red, green, and blue values
+
+  	// Loop to iterate through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Retrieve information concerning each individual row as the loop iterates
+    	png_byte* row = row_pointers[y];
+
+    	// Additional loop to iterate through each pixel within each loop
+    	for (int x = 0; x < width; x++) 
+    	{
+      		// Retreive the color values of each pixel by reading in the next four values
+      		png_byte* ptr = &(row[x*4]);
+
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
       
-      r = (int)(cFactor*(r - 128.0) + 128);
-      g = (int)(cFactor*(g - 128.0) + 128);
-      b = (int)(cFactor*(b - 128.0) + 128);
-      
-      ptr[0] = clamp(r);
-      ptr[1] = clamp(g);
-      ptr[2] = clamp(b);
-      
-    }
-  }
+      		// Change the red-green-blue value of each pixel based on the contrast factor
+      		r = (int)(cFactor*(r - 128.0) + 128);
+      		g = (int)(cFactor*(g - 128.0) + 128);
+      		b = (int)(cFactor*(b - 128.0) + 128);
+      	
+      		// Reassign the values of red-green-blue information for each pixel with the newly calculated contrast value
+      		// Likewise, clamp each value between 0 and 255.
+      		ptr[0] = clamp(r);
+      		ptr[1] = clamp(g);
+      		ptr[2] = clamp(b);
+    	}
+  	}
+
+  	return;
 }
 
 
-int Picture::clamp(int p){
-  if(p < 0)
-    return 0;
-  else if(p > 255)
-    return 255;
-  return p;
+/* Function used for restricting a value within a specific range. The function takes in a integer as input as the value used to check if it is within a certain range.
+The function outputs an integer of the new value if the value passed in is not within the range, or the same value if it is within the range. */
+int Picture::clamp(int p)
+{
+	/* The range of this function is between 0 and 255 */ 
+
+	// If the value passed in is negative, then reset it to the lowest possible value within the range
+  	if(p < 0)
+    	return 0;
+    // Else, if the value passed in is higher than 255, reset it to the highest possible value within the range
+  	else if(p > 255)
+    	return 255;
+    // Else, the value passed in is within the specific range and can be returned with no difference
+  	else
+  		return p;
 }
 
 
