@@ -643,65 +643,124 @@ void Picture::changeExposure(int value)
   	return;
 }
 
-void Picture::changeHighlights(int value) {
-  if(value > 100 || value < -100){
-    cout << "INVALID" << endl;
-    return;
-  }
-  double valdecimal = (double)value / 100.0;
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      v = v + (valdecimal * v);
-      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
-      if(v > 1.0)
-        v = 1.0;
-      if(v <= 0.0)
-        v = 0.0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
+
+/* Function to alter the highlights of a picture. The function receives an integer as input to represent the value that the highlights should be changed by. The method 
+contains no output. The value range of highlights is between -100 and 100. The interface connect with this class is restricted from passing in a value outside of the 
+range of -100 and 100. */
+void Picture::changeHighlights(int value) 
+{
+	// If the value passed in is zero, the highlights do not need to be altered for the picture
+  	if(value == 0)
+  		return;
+
+  	// Perform an operation to change the value passed in to percentage between 0 and 1
+  	double valdecimal = (double)value / 100.0;
+
+  	// Initalize variables to hold the values for red-green-blue as well as hue-saturation-value
+  	int r, g, b;
+  	double h, s, v;
+  
+  	// Loop to iterate through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Retreive information of each row as the loop iterates 
+    	png_byte* row = row_pointers[y];
+
+    	// Additional loop to retreive the column information of each pixel in the picture
+    	for (int x = 0; x < width; x++)
+    	{
+    		// Retreive the color values of each pixel by reading in the next four values
+     		png_byte* ptr = &(row[x*4]);
+      		
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+      
+      		// Convert the red-green-blue values of each pixel to hue-saturation-values
+      		convertToHSV(r, g, b, h, s, v);   
+      		
+      		v = v + (valdecimal * v);   // Adjust the value of "value" in HSV based on the calculations
+      
+      		// The value range of exposure is between 0 and 1 
+    		// If the calculated exposure is beyond its range, reset its value to the highest possible value
+      		if(v > 1.0)
+        		v = 1.0;
+        	// If the calculated exposure is below its range, reset its value to the smallest possible value
+      		if(v <= 0.0)
+        		v = 0.0;
+      		
+      		// Recalculate the values of red-green-blue with the newly calculated exposure
+      		convertToRGB(h, s, v, r, g, b);
+      
+      		// Reassign the red-green-blue values of each pixel with the newly calculated exposure
+      		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+    	}
+  	}
+
+  	return;
 }
 
-void Picture::changeShadows(int value) {
-  if(value > 100 || value < -100){
-    cout << "INVALID" << endl;
-    return;
-  }
-  double valdecimal = (double)value / 100.0;
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      v = v + (valdecimal * (1-v));
-      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
-      if(v > 1.0)
-        v = 1.0;
-      if(v <= 0.0)
-        v = 0.0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
+
+/* Function for changing the shadows on a picture. The function takes in an integer as input to represent the value for which the shadows should be changed. 
+The method contains no ouputs. The value range of shadows is -100 and 100. The interface connected with this class is restricted to only input values within 
+the range of -100 and 100. */
+void Picture::changeShadows(int value) 
+{
+	// If the value passed in is zero, the shadow does not need to be altered
+	if(value == 0)
+		return;
+
+	// Calculate the value passed in as a percentage between 0 and 1
+  	double valdecimal = (double)value / 100.0;
+
+  	// Initalize variables to represent the red-green-blue and hue-saturation-value
+  	int r, g, b;
+  	double h, s, v;
+
+  	// Loop to iterate through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Retreive information of each row as the loop iterates 
+    	png_byte* row = row_pointers[y];
+    	
+    	// Additional loop to retreive the column information of each pixel in the picture
+    	for (int x = 0; x < width; x++)
+    	{
+      		// Retreive the color values of each pixel by reading in the next four values
+     		png_byte* ptr = &(row[x*4]);
+      		
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+     		
+     		// Convert the red-green-blue values of each pixel to hue-saturation-values
+     		convertToHSV(r, g, b, h, s, v);
+      		
+      		v = v + (valdecimal * (1-v));   // Adjust the value of "value" in HSV based on the calculations
+      
+      		// The value range of shadows is between 0 and 1 
+    		// If the calculated shadow is beyond its range, reset its value to the highest possible value
+      		if(v > 1.0)
+        		v = 1.0;
+        	// If the calculated shadow is below its range, reset its value to the smallest possible value
+      		if(v <= 0.0)
+        		v = 0.0;
+
+        	// Recalculate the values of red-green-blue with the newly calculated shadows
+      		convertToRGB(h, s, v, r, g, b);
+      		
+			// Reassign the red-green-blue values of each pixel with the newly calculated shadow
+      		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+    	}
+  	}
+
+  	return;
 }
+
 
 
 void Picture::changeTemp(int value){
