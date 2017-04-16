@@ -1,0 +1,3 @@
+Hue: -359 to 359
+Saturation, Brightness: -100 to 100
+Contrast: -255 to 255
