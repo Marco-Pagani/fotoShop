@@ -16,6 +16,8 @@ opened  (the input must be a character array since the libpng libra
 file, and creates a Picture object based on the in
  * formation inside the file. 
  */
+
+
 void Picture::readPNGFile(char * fileName) {
     
   // Create an array to read in the first 8 bits of a png file. The first 8 bits represents the header portion for a PNG picture.
@@ -139,6 +141,7 @@ void Picture::readPNGFile(char * fileName) {
 
   fclose(x);
 } 
+
 
 /* This function opens up a file and writes a PNG file to it. The method takes in a character array as input that will be used to represent the file name (a
 character array must be used instead of a string because libpng is written in C and cannot function with strings). The function contains no output.*/
@@ -284,6 +287,7 @@ void Picture::convertToHSV(int r, int g, int b, double &h, double &s, double &v)
   	return;
 }
 
+
 /* Function for converting the values from hue-saturation-value format to red-green-blue format. The function takes in three double values to represent the values
 hue, saturation, and values. The function also takes in three integer address so that the values of red, green, and blue can be changed. The method contains no outputs. */
 void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, int &b)
@@ -343,6 +347,7 @@ void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, i
   	return;
 }
 
+
 /* Function to change the hue of a picture. The input of the function is an integer, which represents the how much the hue for the picture should be changed.
 The function contains no output. The interface linked with this algorithm is restricted to pass in a value between -359 and 359.*/ 
 void Picture::changeHue(int value){
@@ -392,6 +397,7 @@ void Picture::changeHue(int value){
     }
   }
 }
+
 
 /* Function to change the saturation of a picture. The function receives an integer as input to represent how much the saturation of the picture is to be changed.
 The method contains no output. Saturation is represented as a percentage. Based on the interface integrated with this class, the value passed in will be between 
@@ -447,37 +453,59 @@ void Picture::changeSat(int value)
 }
 
 
-//can read in either a double directly or take in an int and process it inside, makes no difference
-void Picture::changeBright(int value){
-  if(value > 100 || value < -100){
-  	//WILL MOST LIKELY HAVE TO TAKE OUT 
-    //cout << "INVALID" << endl;
-    return;
-  }
-  double valdecimal = (double)value / 100.0;
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      v = v + valdecimal;
-      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
-      if(v > 1.0)
-        v = 1.0;
-      if(v <= 0.0)
-        v = 0.0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
-	
+/* Function to change the brightness of a picture. The method receives an integer to represent the value relating to how much the brightness needs to be adjusted.
+The function contains no output. The value range of brightness is a percentage between -100 and 100. The interface integrated with this class is restricted to pass
+in a value within -100 and 100.*/
+void Picture::changeBrightness(int value)
+{
+	// If the value passed in is zero, nothing needs to be adjusted
+ 	if(value == 0)
+ 		return;
+
+ 	// Convert the value of the integer passed in to a value between 0 and 1
+  	double valdecimal = (double)value / 100.0;
+
+  	// Initalize variables to represent the red-green-blue values as well as the hue-saturation-value values
+  	int r, g, b;
+  	double h, s, v;
+
+  	// Loop to iterate through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Retreive the information from each row as the loop iterates
+    	png_byte* row = row_pointers[y];
+    	
+    	// Second loop to iterate through the column values of the picture and retrieve the x,y value of each pixel
+    	for (int x = 0; x < width; x++) 
+    	{
+      		// Retreive the color values of each pixel by reading in the next four values
+      		png_byte* ptr = &(row[x*4]);
+
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+
+      		convertToHSV(r, g, b, h, s, v);   // Convert the red-green-blue values to hue-saturation-value values
+      		
+      		v = v + valdecimal;   // Adjust the value information of each pixel to change the brightness of the picture
+      
+      		// The value range of brightness is a percentage between 0 and 1 
+      		// If the newly calculated value is greater than 1, reset it to the highest possible brightness value
+      		if(v > 1.0)
+        		v = 1.0;
+        	// If the newly calculated value is lower than 0, reset it to the lowest possible brightness value
+      		if(v <= 0.0)
+        		v = 0.0;
+      
+      		// Convert the hue-saturation-values information (with the newly calculated brightness value) back to red-green-blue 
+      		convertToRGB(h, s, v, r, g, b);
+      
+      		// Reassign the values of red, green, blue for each pixel with the newly calculated brightness value
+      		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+    	}
+  	}	
 }
 
 
