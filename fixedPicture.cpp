@@ -421,6 +421,22 @@ int Picture::clamp(int p){
   return p;
 }
 
+void Picture::temperature(int value){
+  if(value > 255 || value < -255){
+    //cout << "Error" << endl;
+    return;
+  }
+  int r, g, b;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      ptr[0] = clamp(ptr[0] + value);
+      ptr[2] = clamp(ptr[2] - value);
+    }
+  }
+}
+
 void Picture::verticalFlip(){
   png_bytep temp;
   for(int y = 0; y < height/2; y++) {
