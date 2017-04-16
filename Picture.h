@@ -34,7 +34,7 @@ public:
 	void changeShadows(int value);			//done
 	void changeSat(double satVal);			//done
 	void changeHue(int hueVal);				//done
-	void changeWarmth(int value);	
+	void changeTemp(int value);			//done
 };
 
 #endif
