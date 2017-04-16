@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstdio>
-#include "Picture.h"
+#include "fixedPicture.h"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ file, and creates a Picture object based on the information inside the file. */
 void Picture::readPNGFile(char *filename){
   
   // Open a file based on the name passed in
-  fp = fopen(filename, "rb");
+  FILE *fp = fopen(filename, "rb");
   if(!fp){
     cout << "Error, invalid file type" << endl;
     return;
@@ -275,7 +275,7 @@ void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, i
 }
 
 
-void Picture::hue(int value){
+void Picture::changeHue(int value){
   //restricts input to a closed interval (slider)
   if(value > 360 || value < -359){
     //cout << "INVALID" << endl;
@@ -306,11 +306,12 @@ void Picture::hue(int value){
 }
 
 //Can only go from 0 to 1, the value is a percentage so must be inbetween -1 and 1.
-void Picture::saturation(int value) {
+void Picture::changeSat(int value) {
   if(value > 100 || value < -100){
     cout << "INVALID" << endl;
     return;
   }
+  double valdecimal = (double)value / 100.0;
   int r, g, b;
   double h, s, v;
   for (int y = 0; y < height; y++) {
@@ -321,7 +322,7 @@ void Picture::saturation(int value) {
       g = ptr[1];
       b = ptr[2];
       convertToHSV(r, g, b, h, s, v);
-      s = s + (double)value/100.0;
+      s = s + valdecimal;
       //anything set over the possible max is made to be exactly at the min/max, which in this case is 0 and 1.
       if(s > 1.0)
         s = 1.0;
@@ -337,12 +338,13 @@ void Picture::saturation(int value) {
 
 
 //can read in either a double directly or take in an int and process it inside, makes no difference
-void Picture::brightness(int value){
+void Picture::changeBright(int value){
   if(value > 100 || value < -100){
   	//WILL MOST LIKELY HAVE TO TAKE OUT 
     //cout << "INVALID" << endl;
     return;
   }
+  double valdecimal = (double)value / 100.0;
   int r, g, b;
   double h, s, v;
   for (int y = 0; y < height; y++) {
@@ -353,7 +355,7 @@ void Picture::brightness(int value){
       g = ptr[1];
       b = ptr[2];
       convertToHSV(r, g, b, h, s, v);
-      v = v + ((double)value/100.0);
+      v = v + valdecimal;
       //anything set over the possible max is made to be exactly at the max instead of over/under the max.
       if(v > 1.0)
         v = 1.0;
@@ -372,24 +374,11 @@ void Picture::brightness(int value){
 //this method will adjust the contrast
 //int value is to be between the values of -255 to 255. "-" reduces contrast,
 // "+" increases it
-void Picture::contrast(int value){
+void Picture::changeContrast(int value){
   if(value < -255 || value > 255){
     //cout << "Error" << endl;
     return;
   }
-
-  /*
-  factor = (259 * (contrast + 255)) / (255 * (259 - contrast))
-colour = GetPixelColour(x, y)
-newRed   = Truncate(factor * (Red(colour)   - 128) + 128)
-newGreen = Truncate(factor * (Green(colour) - 128) + 128)
-newBlue  = Truncate(factor * (Blue(colour)  - 128) + 128)
-PutPixelColour(x, y) = RGB(newRed, newGreen, newBlue)
-
-  
-  */
-  
-  
   double cFactor = (259.0*((double)value + 255.0)) / (255.0*(259.0 - (double)value));
   int r, g, b;
   for (int y = 0; y < height; y++) {
@@ -421,7 +410,99 @@ int Picture::clamp(int p){
   return p;
 }
 
-void Picture::temperature(int value){
+
+void Picture::changeExposure(int value) {
+  if(value > 100 || value < -100){
+    //cout << "INVALID" << endl;
+    return;
+  }
+  double valdecimal = (double)value / 100.0;
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      v = v + valdecimal;
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+void Picture::changeHighlights(int value) {
+  if(value > 100 || value < -100){
+    cout << "INVALID" << endl;
+    return;
+  }
+  double valdecimal = (double)value / 100.0;
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      v = v + (valdecimal * v);
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+void Picture::changeShadows(int value) {
+  if(value > 100 || value < -100){
+    cout << "INVALID" << endl;
+    return;
+  }
+  double valdecimal = (double)value / 100.0;
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      v = v + (valdecimal * (1-v));
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+
+void Picture::changeTemp(int value){
   if(value > 255 || value < -255){
     //cout << "Error" << endl;
     return;
@@ -436,6 +517,9 @@ void Picture::temperature(int value){
     }
   }
 }
+
+
+
 
 void Picture::verticalFlip(){
   png_bytep temp;
@@ -533,7 +617,10 @@ int main(){
   Picture test(fileName);
   
   //Do stuff here
-  test.contrast(128);
+  test.changeTemp(40);
+  test.rotateLeft();
+  test.changeHue(200);
+  test.changeContrast(10);
   //etc.
   
   //Writes to output file
