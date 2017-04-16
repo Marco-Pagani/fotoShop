@@ -192,152 +192,149 @@ void Picture::writePNGFile(char * fileName) {
 /* Function for converting the picture information from a red-green-blue format to a hue-saturation-value format. The method takes in three integers to represent
 the red, blue, and green value from the picture. It contains references to three doubles so that the address for hue, saturation, and value can be adjusted. The 
 function has no output after performing the conversion. */
-void Picture::convertToHSV (
-    int r,
-    int g,
-    int b,
-    double & hue,
-    double & sat,
-    double & val
-) 
+void Picture::convertToHSV(int r, int g, int b, double &h, double &s, double &v)
 {
-	// Create an array to store the blue, green, and red values from the pixels
-    double RGB[3] = {
-        b / 255.0,
-        g / 255.0,
-        r / 255.0
-    };
+	// Convert the red, blue, and green values into decimals
+    double rP = (double)r/255.0;
+    double gP = (double)g/255.0;
+  	double bP = (double)b/255.0;
 
-    // Initalize three variables that will be used in HSV calculations and formulas
-    float min, max, diff;
+  	// Initalize values for min and max variable that will be used later in the conversion formula
+  	double max = -1.0;   // The maximum value can never be smaller than -1
+  	double min = 400.0;   // The minimum should never be higher than 400
 
-    // Find the minimum value of from the red, green, and blue values 
-    min  = RGB[0] < RGB[1]
-        ? RGB[0]
-        : RGB[1];
-    min  = min < RGB[2]
-        ? min
-        : RGB[2];
+  	// Initalize variables to represent the hue, saturation, and value
+  	double hue = 0.0;
+  	double sat = 0.0;
+  	double val = 0.0;
+  
+  	// Create an array to hold the red, green, and blue values from the pixel
+  	double RGB [3] = {rP, gP, bP};
+  
+  	// Convert each red, green, blue value to have 8-bit color depth
+  	int maxInd;   // Initalize a variable to keep track of the index for which value is the largest between red, green, or blue
+  	for (int i=0; i < 3; i++)
+  	{
+  		// Check which red, green, and blue value is the smallest of the three
+    	if (RGB[i] < min)
+      		min = RGB[i];
+      
+      	// Check which red, green, and blue value is the largest of the three
+    	if (RGB[i] > max)
+    	{
+      		max = RGB[i];
+      		maxInd = i;   // Update the value of the index that contains the largest value
+    	}
+  	}
+  
+  	double delta = max - min;
 
-    // Find the maximum value from the red, green, and blue values
-    max  = RGB[0] > RGB[1]
-        ? RGB[0]
-        : RGB[1];
-    max  = max > RGB[2]
-        ? max
-        : RGB[2];
+  	/* FORMULA FOR CALCULATING HUE*/
+  
+  	// Check if the value for delta is a miniscule value - in which case, it can be set to 0
+  	if(delta < 0.000001)
+    	hue = 0.0;
+  
+  	// Else, check if the maximum value is from red index
+  	else if(maxInd == 0)
+  	{
+    	double mod_factor = (gP-bP)/delta;
 
-    // Set the number for "value" equal to the maximum value of the red, green, blue values
-    val  = max;
+    	while(mod_factor <= 0.0)
+      		mod_factor = mod_factor += 6.0;
+    	
+    	while(mod_factor >= 6.0){
+      		mod_factor = mod_factor - 6.0;
+  
+    	hue = mod_factor;
+  	}
+  
+  	// Else, check if the maximum value is from the green index
+  	else if(maxInd == 1)
+    	hue = (bP - rP)/delta + 2.0;
+  	
+  	// Else, check if the maximum value is from the blue index
+  	else if(maxInd == 2)
+    	hue = (rP - gP)/delta + 4.0;
+  	
+  	// Else, produce an error
+  	else
+    	cout << "error" << endl;
+  
+  	hue = hue * 60.0;
+  
+  	/* FORMULA FOR CALCULATING SATURATION */
 
-    //find hue and sat
-    diff = max - min;
-    if (diff < 0.00001) {
-        sat = 0;
-        hue = 0;
-        return;
-    }
+  	// If the maximum value is a miniscule value, then it can be set to 0
+  	if(max < 0.001)
+    	sat = 0.0;
+    // Else, set the value for saturation
+  	else
+    	sat = delta/max;
+   
+    /* FORMULA FOR CALCULATING VALUE */
 
-    if (max > 0) {
-        sat = diff / max;
-    } else {
-        sat = 0;
-        hue = 0;
-        return;
-    }
-
-    if (RGB[0] == max) {
-        hue = (RGB[1] - RGB[2]) / diff;
-    } else if (RGB[1] == max) {
-        hue = 2.0 + (RGB[3] - RGB[0]) / diff;
-    } else {
-        hue = 4.0 + (RGB[0] - RGB[1]) / diff;
-    }
-
-    //clamp hue
-    hue *= 60;
-    if (hue < 0) {
-        hue += 360;
-    }
-
+ 	val = max;   // Set value
+  
+  	// Re-establish the values to the address assigned for hue, saturation, and value based on the values calculated through the formulas
+  	h = hue;
+  	s = sat;
+  	v = val;
 }
 
-void Picture::convertToRGB(
-    double hue,
-    double sat,
-    double val,
-    int & r,
-    int & g,
-    int & b
-) 
-{
-
-    if (sat == 0.0) {
-        r = val * 255;
-        g = val * 255;
-        b = val * 255;
-        return;
-    }
-
-    double sector = hue;
-    if (sector >= 360) {
-        sector = 0.0;
-    }
-    sector     /= 60.0;
-    long rem   = (long)sector;
-    double REM = sector - rem;
-
-    double p   = val * (1.0 - sat) * 255;
-    double q   = val * (1.0 - (sat * REM)) * 255;
-    double t   = val * (1.0 - (sat * (1.0 - REM))) * 255;
-    val        *= 255;
-    p          += 0.5;
-    q          += 0.5;
-    t          += 0.5;
-    val        += 0.5;
-
-    switch (rem) {
-        case 0:
-            r = val;
-            g = t;
-            b = p;
-            break;
-        case 1:
-            r = q;
-            g = val;
-            b = p;
-            break;
-        case 2:
-            r = p;
-            g = val;
-            b = t;
-            break;
-        case 3:
-            r = p;
-            g = q;
-            b = val;
-            break;
-        case 4:
-            r = t;
-            g = p;
-            b = val;
-            break;
-        case 5:
-        default:
-            r = val;
-            g = p;
-            b = q;
-            break;
-    }
-
-    printf("%i, %i, %i\n", r, g, b);
+//look up conversion from hsv to rgb for exact formula
+void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, int &b){
+  double c = val * sat;
+  double mod_factor = hue / 60.0;
+  while(mod_factor >= 2.0)
+    mod_factor = mod_factor - 2.0;
+  while(mod_factor <= 0.0)
+    mod_factor = mod_factor + 2.0;
+  double x = c * (1 - abs(mod_factor - 1));
+  double m = val - c;
+  
+  double rP, gP, bP;
+  if((0.0 <= hue && hue < 60.0)){
+      rP = c;
+      gP = x;
+      bP = 0;
+  }
+  else if(60.0 <= hue && hue < 120.0){
+      rP = x;
+      gP = c;
+      bP = 0;
+  }
+  else if(120.0 <= hue && hue < 180.0){
+      rP = 0;
+      gP = c;
+      bP = x;
+  }
+  else if(180.0 <= hue && hue < 240.0){
+      rP = 0;
+      gP = x;
+      bP = c;
+  }
+  else if(240.0 <= hue && hue < 300.0){
+      rP = x;
+      gP = 0;
+      bP = c;
+  }
+  else if(300.0 <= hue && hue < 360.0){
+      rP = c;
+      gP = 0;
+      bP = x;
+  }
+  
+  r = (int)((rP + m) * 255.0);
+  g = (int)((gP + m) * 255.0);
+  b = (int)((bP + m) * 255.0);
 }
 
-//HUEVAL CAN GO FROM 0 -> 360.
-void Picture::changeHue(int hueVal) {
+
+void Picture::changeHue(int value){
   //restricts input to a closed interval (slider)
-  if(hueVal > 360 || hueVal < -359){
-    cout << "INVALID" << endl;
+  if(value > 360 || value < -359){
+    //cout << "INVALID" << endl;
     return;
   }
   int r, g, b;
@@ -350,7 +347,7 @@ void Picture::changeHue(int hueVal) {
       g = ptr[1];
       b = ptr[2];
       convertToHSV(r, g, b, h, s, v);
-      h = h + (double)hueVal;
+      h = h + (double)value;
       //fixes the max and min values of the possible hue. anything that may go over is stopped exactly at the max.
       if(h > 360.0)
         h = 359.0;
@@ -365,11 +362,12 @@ void Picture::changeHue(int hueVal) {
 }
 
 //Can only go from 0 to 1, the value is a percentage so must be inbetween -1 and 1.
-void Picture::changeSaturation(double satVal) {
-  if(satVal > 1 || satVal < -1){
+void Picture::changeSat(int value) {
+  if(value > 100 || value < -100){
     cout << "INVALID" << endl;
     return;
   }
+  double valdecimal = (double)value / 100.0;
   int r, g, b;
   double h, s, v;
   for (int y = 0; y < height; y++) {
@@ -380,7 +378,7 @@ void Picture::changeSaturation(double satVal) {
       g = ptr[1];
       b = ptr[2];
       convertToHSV(r, g, b, h, s, v);
-      s = s + satVal;
+      s = s + valdecimal;
       //anything set over the possible max is made to be exactly at the min/max, which in this case is 0 and 1.
       if(s > 1.0)
         s = 1.0;
@@ -394,12 +392,15 @@ void Picture::changeSaturation(double satVal) {
   }
 }
 
-//Adjusts brightness of image.Likewise to saturation, value can only go from 0 to 1 so input must be restricted from -1 to 1.
-void Picture::changeBrightness(double brightVal) {
-  if(brightVal > 1 || brightVal < -1){
-    cout << "INVALID" << endl;
+
+//can read in either a double directly or take in an int and process it inside, makes no difference
+void Picture::changeBright(int value){
+  if(value > 100 || value < -100){
+  	//WILL MOST LIKELY HAVE TO TAKE OUT 
+    //cout << "INVALID" << endl;
     return;
   }
+  double valdecimal = (double)value / 100.0;
   int r, g, b;
   double h, s, v;
   for (int y = 0; y < height; y++) {
@@ -410,12 +411,79 @@ void Picture::changeBrightness(double brightVal) {
       g = ptr[1];
       b = ptr[2];
       convertToHSV(r, g, b, h, s, v);
-      double factor = v;
-      if(factor > 0.5){
-		  factor = 0.5 - factor;
-	  }
-	  factor /= 0.5;
-      v = v + (brightVal * factor);
+      v = v + valdecimal;
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+	
+}
+
+
+//this method will adjust the contrast
+//int value is to be between the values of -255 to 255. "-" reduces contrast,
+// "+" increases it
+void Picture::changeContrast(int value){
+  if(value < -255 || value > 255){
+    //cout << "Error" << endl;
+    return;
+  }
+  double cFactor = (259.0*((double)value + 255.0)) / (255.0*(259.0 - (double)value));
+  int r, g, b;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      
+      r = (int)(cFactor*(r - 128.0) + 128);
+      g = (int)(cFactor*(g - 128.0) + 128);
+      b = (int)(cFactor*(b - 128.0) + 128);
+      
+      ptr[0] = clamp(r);
+      ptr[1] = clamp(g);
+      ptr[2] = clamp(b);
+      
+    }
+  }
+}
+
+
+int Picture::clamp(int p){
+  if(p < 0)
+    return 0;
+  else if(p > 255)
+    return 255;
+  return p;
+}
+
+
+void Picture::changeExposure(int value) {
+  if(value > 100 || value < -100){
+    //cout << "INVALID" << endl;
+    return;
+  }
+  double valdecimal = (double)value / 100.0;
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      v = v + valdecimal;
       //anything set over the possible max is made to be exactly at the max instead of over/under the max.
       if(v > 1.0)
         v = 1.0;
@@ -429,11 +497,12 @@ void Picture::changeBrightness(double brightVal) {
   }
 }
 
-void Picture::changeExposure(double expoVal) {
-  if(brightVal > 1 || brightVal < -1){
+void Picture::changeHighlights(int value) {
+  if(value > 100 || value < -100){
     cout << "INVALID" << endl;
     return;
   }
+  double valdecimal = (double)value / 100.0;
   int r, g, b;
   double h, s, v;
   for (int y = 0; y < height; y++) {
@@ -444,7 +513,7 @@ void Picture::changeExposure(double expoVal) {
       g = ptr[1];
       b = ptr[2];
       convertToHSV(r, g, b, h, s, v);
-      v = v + expoVal;
+      v = v + (valdecimal * v);
       //anything set over the possible max is made to be exactly at the max instead of over/under the max.
       if(v > 1.0)
         v = 1.0;
@@ -458,11 +527,12 @@ void Picture::changeExposure(double expoVal) {
   }
 }
 
-void Picture::changeHighlights(double value) {
-  if(brightVal > 1 || brightVal < -1){
+void Picture::changeShadows(int value) {
+  if(value > 100 || value < -100){
     cout << "INVALID" << endl;
     return;
   }
+  double valdecimal = (double)value / 100.0;
   int r, g, b;
   double h, s, v;
   for (int y = 0; y < height; y++) {
@@ -473,7 +543,7 @@ void Picture::changeHighlights(double value) {
       g = ptr[1];
       b = ptr[2];
       convertToHSV(r, g, b, h, s, v);
-      v = v + (value * v);
+      v = v + (valdecimal * (1-v));
       //anything set over the possible max is made to be exactly at the max instead of over/under the max.
       if(v > 1.0)
         v = 1.0;
@@ -487,36 +557,8 @@ void Picture::changeHighlights(double value) {
   }
 }
 
-void Picture::changeShadows(double value) {
-  if(brightVal > 1 || brightVal < -1){
-    cout << "INVALID" << endl;
-    return;
-  }
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      v = v + (value(1-v));
-      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
-      if(v > 1.0)
-        v = 1.0;
-      if(v <= 0.0)
-        v = 0.0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
-}
 
-void Picture::changeTemperature(int value){
+void Picture::changeTemp(int value){
   if(value > 255 || value < -255){
     //cout << "Error" << endl;
     return;
@@ -532,62 +574,114 @@ void Picture::changeTemperature(int value){
   }
 }
 
-//this method checks if the color values are between 0 and 255
-int Picture::clamp(int x)
-{
-  if (x < 0)
-  {
-    return 0;
-  }
-  else if (x > 255)
-  {
-    return 255;
-  }
-  else
-  {
-    return x;
+
+
+
+void Picture::verticalFlip(){
+  png_bytep temp;
+  for(int y = 0; y < height/2; y++) {
+    temp = row_pointers[y];
+    row_pointers[y] = row_pointers[height-1-y];
+    row_pointers[height-1-y] = temp;
   }
 }
 
-
-//this method will adjust the contrast
-//int c is to be between the values of -255 to 255. "-" reduces contrast,
-// "+" increases it
-
-//This is what I found on github about a contrast method. It had a couple errors so I think I fixed them (hopefully without messing up the logic
-//However I don't think that c should be allowed to go up to 255, since it messes up the image pretty badly after around 50 (as you might see if you try it yourself)
-//Don't even get me started on what happens when you set c to 200 (my eyes!)
-void Picture::changeContrast(int c){
-  double cFactor = (259.0*((double)c + 255.0)) / (255.0*(259.0 - (double)c));
-  int r, g, b;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-
-      r = (int)(cFactor*(r - 128.0) + 128);
-      g = (int)(cFactor*(g - 128.0) + 128);
-      b = (int)(cFactor*(b - 128.0) + 128);
-
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-
-    }
+void Picture::rotateLeft(){
+  //Using a temporary variable to swap the width and height values, as new dimensions must be made
+  int temp;
+  temp = width;
+  width = height;
+  height = temp;
+  
+  //Creates a new array of png_bytes to replace previous, using the new hieght and widths
+  png_bytep * copy_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+  for(int i = 0; i < height; i++){
+    copy_pointers[i] = (png_byte*)malloc(width * 4);//The malloc in the read method is essentially this
   }
+  
+  
+  for(int y = 0; y < height; y++) {
+    png_bytep copy = copy_pointers[y];
+    for(int x = 0; x < width; x++) {
+      png_bytep row = row_pointers[x];
+      png_bytep px = &(row[y*4]);
+      png_bytep pc = &(copy[x*4]);
+      pc[0] = px[0];
+      pc[1] = px[1];
+      pc[2] = px[2];
+      pc[3] = px[3];
+    }   
+  }
+  
+  for(int y = 0; y < width; y++) {
+    free(row_pointers[y]);
+  }
+  free(row_pointers);
+  
+  row_pointers = copy_pointers;
+  
+  verticalFlip();
 }
 
-int main() {
-    char fileName[100]; //file name is put in here.  Must be char * because libpng is in c.
-    cout << "Please enter a file name to open: ";
-    cin >> fileName;
-    Picture pleaseGodWork;
-    pleaseGodWork.readPNGFile(fileName);
-    cout << "Please enter a file name to save the file: ";
-    cin >> fileName;
-    pleaseGodWork.writePNGFile(fileName);
-    return 0;
+void Picture::rotateRight(){
+  //reversing dimensions of newly oriented image
+  int temp;
+  temp = width;
+  width = height;
+  height = temp;
+  
+  //makes a copy of the png_byte array to store rotated data
+  png_bytep * copy_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+  for(int i = 0; i < height; i++){
+    copy_pointers[i] = (png_byte*)malloc(width * 4);
+  }
+  
+  
+  for(int y = height-1; y >= 0; y--) {
+    png_bytep copy = copy_pointers[y];
+    for(int x = width-1; x >= 0; x--) {
+      png_bytep row = row_pointers[width-x-1];
+      png_bytep px = &(row[(height-1-y)*4]);
+      png_bytep pc = &(copy[x*4]);
+      pc[0] = px[0];
+      pc[1] = px[1];
+      pc[2] = px[2];
+      pc[3] = px[3];
+    }   
+  }
+  
+  for(int y = 0; y < width; y++) {
+    free(row_pointers[y]);
+  }
+  free(row_pointers);
+  
+  row_pointers = copy_pointers;
+  
+  verticalFlip();  
+}
+
+void Picture::horizontalFlip(){
+  rotateLeft();
+  rotateLeft();
+  verticalFlip();
+}
+
+int main(){
+  char fileName[100];  //file name is put in here.  Must be char * because libpng is in c.
+  cout << "Please enter a file name to open: ";
+  cin >> fileName;
+  Picture test(fileName);
+  
+  //Do stuff here
+  test.changeTemp(40);
+  test.rotateLeft();
+  test.changeHue(200);
+  test.changeContrast(10);
+  //etc.
+  
+  //Writes to output file
+  cout << "Please enter a file name to save the file: ";
+  cin >> fileName;
+  test.writePNGFile(fileName);
+  return 0;
 }
