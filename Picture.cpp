@@ -534,6 +534,22 @@ void Picture::changeShadows(double value) {
   }
 }
 
+void Picture::changeTemp(int value){
+  if(value > 255 || value < -255){
+    //cout << "Error" << endl;
+    return;
+  }
+  int r, g, b;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      ptr[0] = clamp(ptr[0] + value);
+      ptr[2] = clamp(ptr[2] - value);
+    }
+  }
+}
+
 //this method checks if the color values are between 0 and 255
 int Picture::clamp(int x)
 {
