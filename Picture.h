@@ -12,27 +12,29 @@ private:
 	png_bytep * row_pointers;
 	png_structp png_ptr;
 	png_infop info_ptr;
+	
+	int clamp(int x);
 
 public:
 	/*libpng works by reading in the file data, applying the actual image data
 	to an array, and then printing out that array on a separate file.*/
+	
 	Picture();
-	Picture(char *inputFile);
 
 	void readPNGFile(char *fileName);
 	void writePNGFile(char *fileName);
 	
-	void convertToHSL(int& r, int& g, int& b, double hue, double sat, double lum);
-	void convertToRGB(double hue, double sat, double lum, int& r, int& g, int& b);
+	void convertToHSV(int r, int g, int b, double& hue, double& sat, double& val);
+	void convertToRGB(double hue, double sat, double val, int& r, int& g, int& b);
 	
-	void brightness(int value);
-	void contrast(int value);
-	void exposure(int value);
-	void highlights(int value);
-	void shadows(int value);
-	void saturation(int value);
-	void hue(int value);
-	void warmth(int value);	
+	void changeBright(double brightVal);	//done
+	void adjustContrast(int c);				//done
+	void changeExpo(int ex);
+	void changeHighlights(int value);		//done
+	void changeShadows(int value);			//done
+	void changeSat(double satVal);			//done
+	void changeHue(int hueVal);				//done
+	void changeWarmth(int value);	
 };
 
 #endif

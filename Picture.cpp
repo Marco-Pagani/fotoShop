@@ -351,35 +351,235 @@ void Picture::convertToRGB(
     printf("%i, %i, %i\n", r, g, b);
 }
 
-void Picture::brightness(int value) {
-    for (int y = 0; y < height; y++) {
-        png_byte * row = row_pointers[y];
-        for (int x = 0; x < width; x++) {
-            png_byte * ptr = &(row[x * 4]);
-            printf("%i, %i, %i\n", ptr[0], ptr[1], ptr[2]);
-            double h = 0,
-            s        = 0,
-            v        = 0;
-            convertToHSV(ptr[0], ptr[1], ptr[2], h, s, v);
-            //printf("%i, %i, %i, %f, %f, %f \n", ptr[0], ptr[1],ptr[2],h,s,v);
-            v += (value / 100.0);
-            if (v < 0) 
-                v = 0;
-            if (v > 1) 
-                v = 1;
-            
-            int r = ptr[0];
-            int g = ptr[1];
-            int b = ptr[2];
-            convertToRGB(h, s, v, r, g, b);
-            ptr[0] = r;
-            ptr[1] = g;
-            ptr[2] = b;
-            //printf("%i, %i, %i, %f, %f, %f \n", ptr[0], ptr[1],ptr[2],h,s,v);
-
-        }
+//HUEVAL CAN GO FROM 0 -> 360.
+void Picture::changeHue(int hueVal) {
+  //restricts input to a closed interval (slider)
+  if(hueVal > 360 || hueVal < -359){
+    cout << "INVALID" << endl;
+    return;
+  }
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      h = h + (double)hueVal;
+      //fixes the max and min values of the possible hue. anything that may go over is stopped exactly at the max.
+      if(h > 360.0)
+        h = 359.0;
+      if(h < 0)
+        h = 0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
     }
+  }
+}
 
+//Can only go from 0 to 1, the value is a percentage so must be inbetween -1 and 1.
+void Picture::changeSat(double satVal) {
+  if(satVal > 1 || satVal < -1){
+    cout << "INVALID" << endl;
+    return;
+  }
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      s = s + satVal;
+      //anything set over the possible max is made to be exactly at the min/max, which in this case is 0 and 1.
+      if(s > 1.0)
+        s = 1.0;
+      if(s < 0)
+        s = 0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+//Adjusts brightness of image.Likewise to saturation, value can only go from 0 to 1 so input must be restricted from -1 to 1.
+void Picture::changeBright(double brightVal) {
+  if(brightVal > 1 || brightVal < -1){
+    cout << "INVALID" << endl;
+    return;
+  }
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      double factor = v;
+      if(factor > 0.5){
+		  factor = 0.5 - factor;
+	  }
+	  factor /= 0.5;
+      v = v + (brightVal * factor);
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+void Picture::changeExposure(double expoVal) {
+  if(brightVal > 1 || brightVal < -1){
+    cout << "INVALID" << endl;
+    return;
+  }
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      v = v + expoVal;
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+void Picture::changeHighlights(double value) {
+  if(brightVal > 1 || brightVal < -1){
+    cout << "INVALID" << endl;
+    return;
+  }
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      v = v + (value * v);
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+void Picture::changeShadows(double value) {
+  if(brightVal > 1 || brightVal < -1){
+    cout << "INVALID" << endl;
+    return;
+  }
+  int r, g, b;
+  double h, s, v;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+      convertToHSV(r, g, b, h, s, v);
+      v = v + (value(1-v));
+      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
+      if(v > 1.0)
+        v = 1.0;
+      if(v <= 0.0)
+        v = 0.0;
+      convertToRGB(h, s, v, r, g, b);
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+    }
+  }
+}
+
+//this method checks if the color values are between 0 and 255
+int Picture::clamp(int x)
+{
+  if (x < 0)
+  {
+    return 0;
+  }
+  else if (x > 255)
+  {
+    return 255;
+  }
+  else
+  {
+    return x;
+  }
+}
+
+
+//this method will adjust the contrast
+//int c is to be between the values of -255 to 255. "-" reduces contrast,
+// "+" increases it
+
+//This is what I found on github about a contrast method. It had a couple errors so I think I fixed them (hopefully without messing up the logic
+//However I don't think that c should be allowed to go up to 255, since it messes up the image pretty badly after around 50 (as you might see if you try it yourself)
+//Don't even get me started on what happens when you set c to 200 (my eyes!)
+void Picture::adjustContrast(int c){
+  double cFactor = (259.0*((double)c + 255.0)) / (255.0*(259.0 - (double)c));
+  int r, g, b;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+
+      r = (int)(cFactor*(r - 128.0) + 128);
+      g = (int)(cFactor*(g - 128.0) + 128);
+      b = (int)(cFactor*(b - 128.0) + 128);
+
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+
+    }
+  }
 }
 
 int main() {
