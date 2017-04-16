@@ -579,34 +579,68 @@ int Picture::clamp(int p)
 }
 
 
-void Picture::changeExposure(int value) {
-  if(value > 100 || value < -100){
-    //cout << "INVALID" << endl;
-    return;
-  }
-  double valdecimal = (double)value / 100.0;
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      v = v + valdecimal;
-      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
-      if(v > 1.0)
-        v = 1.0;
-      if(v <= 0.0)
-        v = 0.0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
+/* Function used for changing exposure of a picture. The function receives an integer as input to represent how much the exposure is to be change. The function contains
+no output. The value range of exposure is a percentage between -100 and 100. The interface integrated with this class is restricted to send in a value between -100 and 
+100. */
+void Picture::changeExposure(int value) 
+{
+  	// If the value passed in is zero, the value does not need to be changed
+  	if(value == 0)
+  		return;
+
+  	// Transform the value passed in into a percentage between 0 and 1
+  	double valdecimal = (double)value / 100.0;
+
+  	// Initalize variables to hold the red-green-blue values and the hue-saturation-value informaiton
+  	int r, g, b;
+  	double h, s, v;
+  
+  	// Loop to iterate through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Retreive information of each row as the loop iterates 
+    	png_byte* row = row_pointers[y];   
+    	
+    	// Additional loop to retreive the column information of each pixel in the picture
+    	for (int x = 0; x < width; x++) 
+    	{
+      		// Retreive the color values of each pixel by reading in the next four values
+      		png_byte* ptr = &(row[x*4]);
+
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+      
+      		convertToHSV(r, g, b, h, s, v);   // Convert the red-green-blue values of each pixel to hue-saturation-values 
+
+      		// Formula for calculating exposure based on the "value" from HSV
+      		double factor = v; 
+      		if(factor > 0.5)
+      			factor = 0.5 - factor;
+
+      		factor /= 0.5;
+
+      		v = v + (value*factor);   // Adjust the value of "value" in HSV based on the calculations 
+    
+    		// The value range of exposure is between 0 and 1 
+    		// If the calculated exposure is beyond its range, reset its value to the highest possible value
+      		if(v > 1.0)
+        		v = 1.0;
+        	// If the calculated exposure is below its range, reset its value to the smallest possible value
+      		if(v <= 0.0)
+       			v = 0.0;
+      		
+      		// Recalculate the values of red-green-blue with the newly calculated exposure
+      		convertToRGB(h, s, v, r, g, b);
+      
+      		// Reassign the red-green-blue values of each pixel with the newly calculated exposure
+      		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+    	}
+  	}
+
+  	return;
 }
 
 void Picture::changeHighlights(int value) {
