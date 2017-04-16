@@ -214,3 +214,51 @@ void changeBright(double brightVal) {
     }
   }
 }
+
+//this method checks if the color values are between 0 and 255
+int clamp(int x)
+{
+  if (x < 0)
+  {
+    return 0;
+  }
+  else if (x > 255)
+  {
+    return 255;
+  }
+  else
+  {
+    return x;
+  }
+}
+
+
+//this method will adjust the contrast
+//int c is to be between the values of -255 to 255. "-" reduces contrast,
+// "+" increases it
+
+//This is what I found on github about a contrast method. It had a couple errors so I think I fixed them (hopefully without messing up the logic
+//However I don't think that c should be allowed to go up to 255, since it messes up the image pretty badly after around 50 (as you might see if you try it yourself)
+//Don't even get me started on what happens when you set c to 200 (my eyes!)
+void adjustContrast(int c){
+  double cFactor = (259.0*((double)c + 255.0)) / (255.0*(259.0 - (double)c));
+  int r, g, b;
+  for (int y = 0; y < height; y++) {
+    png_byte* row = row_pointers[y];
+    for (int x = 0; x < width; x++) {
+      png_byte* ptr = &(row[x*4]);
+      r = ptr[0];
+      g = ptr[1];
+      b = ptr[2];
+
+      r = (int)(cFactor*(r - 128.0) + 128);
+      g = (int)(cFactor*(g - 128.0) + 128);
+      b = (int)(cFactor*(b - 128.0) + 128);
+
+      ptr[0] = r;
+      ptr[1] = g;
+      ptr[2] = b;
+
+    }
+  }
+}
