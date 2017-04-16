@@ -280,83 +280,115 @@ void Picture::convertToHSV(int r, int g, int b, double &h, double &s, double &v)
   	h = hue;
   	s = sat;
   	v = val;
+
+  	return;
 }
 
-//look up conversion from hsv to rgb for exact formula
-void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, int &b){
-  double c = val * sat;
-  double mod_factor = hue / 60.0;
-  while(mod_factor >= 2.0)
-    mod_factor = mod_factor - 2.0;
-  while(mod_factor <= 0.0)
-    mod_factor = mod_factor + 2.0;
-  double x = c * (1 - abs(mod_factor - 1));
-  double m = val - c;
+/* Function for converting the values from hue-saturation-value format to red-green-blue format. The function takes in three double values to represent the values
+hue, saturation, and values. The function also takes in three integer address so that the values of red, green, and blue can be changed. The method contains no outputs. */
+void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, int &b)
+{
+	// Perform calculations to convert the values from hue, saturation, and value to red, green, and blue
+  	double c = val * sat;
+  	double mod_factor = hue / 60.0;
+  	while(mod_factor >= 2.0)
+    	mod_factor = mod_factor - 2.0;
+  	while(mod_factor <= 0.0)
+    	mod_factor = mod_factor + 2.0;
+
+  	double x = c * (1 - abs(mod_factor - 1));
+
+  	double m = val - c;
   
-  double rP, gP, bP;
-  if((0.0 <= hue && hue < 60.0)){
-      rP = c;
-      gP = x;
-      bP = 0;
-  }
-  else if(60.0 <= hue && hue < 120.0){
-      rP = x;
-      gP = c;
-      bP = 0;
-  }
-  else if(120.0 <= hue && hue < 180.0){
-      rP = 0;
-      gP = c;
-      bP = x;
-  }
-  else if(180.0 <= hue && hue < 240.0){
-      rP = 0;
-      gP = x;
-      bP = c;
-  }
-  else if(240.0 <= hue && hue < 300.0){
-      rP = x;
-      gP = 0;
-      bP = c;
-  }
-  else if(300.0 <= hue && hue < 360.0){
-      rP = c;
-      gP = 0;
-      bP = x;
-  }
+  	// Initalize variables to hold the values for red, green, and blue information
+  	double rP, gP, bP;
+
+ 	// Based on the value of hue, determine which values should be assigned to red, green, or blue
+  	if((0.0 <= hue && hue < 60.0)){
+      	rP = c;
+      	gP = x;
+      	bP = 0;
+  	}
+  	else if(60.0 <= hue && hue < 120.0){
+      	rP = x;
+      	gP = c;
+      	bP = 0;
+  	}
+  	else if(120.0 <= hue && hue < 180.0){
+      	rP = 0;
+      	gP = c;
+      	bP = x;
+ 	 }
+  	else if(180.0 <= hue && hue < 240.0){
+      	rP = 0;
+      	gP = x;
+      	bP = c;
+  	}
+  	else if(240.0 <= hue && hue < 300.0){
+      	rP = x;
+      	gP = 0;
+      	bP = c;
+  	}
+  	else if(300.0 <= hue && hue < 360.0){
+      	rP = c;
+      	gP = 0;
+      	bP = x;
+  	}
   
-  r = (int)((rP + m) * 255.0);
-  g = (int)((gP + m) * 255.0);
-  b = (int)((bP + m) * 255.0);
+  	// Assign the calculated values of red, green, blue back to their memory address
+  	r = (int)((rP + m) * 255.0);
+  	g = (int)((gP + m) * 255.0);
+  	b = (int)((bP + m) * 255.0);
+
+  	return;
 }
 
-
+/* Function to change the hue of a picture. The input of the function is an integer, which represents the how much the hue for the picture should be changed.
+The function contains no output. The interface linked with this algorithm is restricted to pass in a value between -359 and 359.*/ 
 void Picture::changeHue(int value){
-  //restricts input to a closed interval (slider)
-  if(value > 360 || value < -359){
-    //cout << "INVALID" << endl;
-    return;
-  }
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      h = h + (double)value;
-      //fixes the max and min values of the possible hue. anything that may go over is stopped exactly at the max.
-      if(h > 360.0)
-        h = 359.0;
-      if(h < 0)
-        h = 0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
+
+	// If the value passed in is 0, the hue does not need to be altered
+  	if(value == 0)
+  		return; 
+
+  	// Initalize variables to hold the red-green-blue values, as well as the hue-saturation-value values
+  	int r, g, b;
+  	double h, s, v;
+
+  	// Establish a loop to parse through each row of the pixels in the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Store the value for each row of the picture as the loop iterates
+    	png_byte* row = row_pointers[y];
+
+    	// Establish a second loop to iterate through each column pixel value
+    	for (int x = 0; x < width; x++) 
+    	{
+    		// Extract the color values of each pixel four values at a time
+      		png_byte* ptr = &(row[x*4]);
+      		r = ptr[0];   // The red color value is stored within the first index 
+      		g = ptr[1];   // The green color value is stored within the second index
+      		b = ptr[2];   // The blue color value is stored within the third index
+
+      		convertToHSV(r, g, b, h, s, v);   // Covert the red-green-blue values to hue-saturation-value
+
+      		// Adjust the hue based on the value passed into the function
+      		h = h + (double)value;
+
+      		// Check if the new value of hue is within the valid range for hue (The range of hue values exists between 0 and 360)
+      		// If the new hue value is above 360, reset it to 359 (the highest possible value for hue)
+      		if(h > 360.0)
+        		h = 359.0;   
+        	// If the new value for hue is negative, rest it to 0
+      		if(h < 0)
+        		h = 0;
+
+      		convertToRGB(h, s, v, r, g, b);   // Covert the hue-saturation-value information back to red-blue-green based on the new hue value
+
+      		// Reset the value of red, blue, green with the newly calculated hue value for each pixel within the picture
+      		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
     }
   }
 }
