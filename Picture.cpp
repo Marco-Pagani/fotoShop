@@ -5,21 +5,6 @@
 
 using namespace std;
 
-/**
-                       .-^-.
-                     .'=^=^='.
-                    /=^=^=^=^=\
-            .-~-.  :^= HAPPY =^;
-          .'~~*~~'.|^ EASTER! ^|
-         /~~*~~~*~~\^=^=^=^=^=^:
-        :~*~~~*~~~*~;\.-*))`*-,/
-        |~~~*~~~*~~|/ * ((*   *'.
-        :~*~~~*~~~*|   *))  *  * \
-         \~~*~~~*~~| *  ((*   *  /
-          `.~~*~~.' \  *))  *  .'
-            `~~~`    '-.((*_.-'
-**/
-
 Picture::Picture() {}
 
 /*  Function to open up a PNG picture file and read in its information. This met
@@ -155,19 +140,15 @@ void Picture::readPNGFile(char * fileName) {
   fclose(x);
 } 
 
-/*  This function opens up a file and writes a PNG file to it. The method takes 
- * in a character array as input that will be used to represent the file name (a
- *  character
-array must be used instead of a string because libpng is written i
- * n C and cannot function with strings). The function contains no ouutput. 
- */
-    void Picture::writePNGFile(char * fileName) {
+/* This function opens up a file and writes a PNG file to it. The method takes in a character array as input that will be used to represent the file name (a
+character array must be used instead of a string because libpng is written in C and cannot function with strings). The function contains no output.*/
+void Picture::writePNGFile(char * fileName) {
     
     // Open up a new file that will be used to write a PNG picture to
     //http://www.libpng.org/pub/png/book/chapter15.html was of especial use.
     FILE * output = fopen(fileName, "wb"); //Creates new file to write to.
     
-/*Two structures need to be created as part of the libpng library. One structure will be used to hold the information from the picture and the
+	/*Two structures need to be created as part of the libpng library. One structure will be used to hold the information from the picture and the
 	other structure will be used to write the information to the file.*/
 
 	// Establish the struct for writing the PNG image
@@ -195,43 +176,42 @@ array must be used instead of a string because libpng is written i
     ); //Sets basic image parameters.
     
     png_write_info(png_ptr, info_ptr); //Writes all non-image data to file.
-    
-    cout << "got up to png_write_image" << endl;
-    
+       
     png_write_image(png_ptr, row_pointers); //Writes image data to file.
     
-    cout << "got up to png_write_end" << endl;
-    
     png_write_end(png_ptr, NULL); //Finishes writing file.  Change NULL to the info pointer if you want comments or time.
-    
-    cout << "got up to deleting array" << endl;
     
     // for(int i = 0; i < height; i++){  Deletes 2d array so no memory leak.  This
     // currently causes the program to crash.   delete [] row_pointers[i]; } delete
     // [] row_pointers;
-    
-    cout << "got up to fclose()" << endl;
-    fclose(output);
-
-    cout << "well, it didn't crash" << endl;
+   
+    fclose(output);   // Close the file
 }
 
-void Picture::convertToHSV(
+
+/* Function for converting the picture information from a red-green-blue format to a hue-saturation-value format. The method takes in three integers to represent
+the red, blue, and green value from the picture. It contains references to three doubles so that the address for hue, saturation, and value can be adjusted. The 
+function has no output after performing the conversion. */
+void Picture::convertToHSV (
     int r,
     int g,
     int b,
     double & hue,
     double & sat,
     double & val
-) {
+) 
+{
+	// Create an array to store the blue, green, and red values from the pixels
     double RGB[3] = {
         b / 255.0,
         g / 255.0,
         r / 255.0
     };
+
+    // Initalize three variables that will be used in HSV calculations and formulas
     float min, max, diff;
 
-    //find min / max
+    // Find the minimum value of from the red, green, and blue values 
     min  = RGB[0] < RGB[1]
         ? RGB[0]
         : RGB[1];
@@ -239,6 +219,7 @@ void Picture::convertToHSV(
         ? min
         : RGB[2];
 
+    // Find the maximum value from the red, green, and blue values
     max  = RGB[0] > RGB[1]
         ? RGB[0]
         : RGB[1];
@@ -246,7 +227,7 @@ void Picture::convertToHSV(
         ? max
         : RGB[2];
 
-    //find value
+    // Set the number for "value" equal to the maximum value of the red, green, blue values
     val  = max;
 
     //find hue and sat
@@ -288,7 +269,8 @@ void Picture::convertToRGB(
     int & r,
     int & g,
     int & b
-) {
+) 
+{
 
     if (sat == 0.0) {
         r = val * 255;
@@ -383,7 +365,7 @@ void Picture::changeHue(int hueVal) {
 }
 
 //Can only go from 0 to 1, the value is a percentage so must be inbetween -1 and 1.
-void Picture::changeSat(double satVal) {
+void Picture::changeSaturation(double satVal) {
   if(satVal > 1 || satVal < -1){
     cout << "INVALID" << endl;
     return;
@@ -413,7 +395,7 @@ void Picture::changeSat(double satVal) {
 }
 
 //Adjusts brightness of image.Likewise to saturation, value can only go from 0 to 1 so input must be restricted from -1 to 1.
-void Picture::changeBright(double brightVal) {
+void Picture::changeBrightness(double brightVal) {
   if(brightVal > 1 || brightVal < -1){
     cout << "INVALID" << endl;
     return;
@@ -534,7 +516,7 @@ void Picture::changeShadows(double value) {
   }
 }
 
-void Picture::changeTemp(int value){
+void Picture::changeTemperature(int value){
   if(value > 255 || value < -255){
     //cout << "Error" << endl;
     return;
@@ -575,7 +557,7 @@ int Picture::clamp(int x)
 //This is what I found on github about a contrast method. It had a couple errors so I think I fixed them (hopefully without messing up the logic
 //However I don't think that c should be allowed to go up to 255, since it messes up the image pretty badly after around 50 (as you might see if you try it yourself)
 //Don't even get me started on what happens when you set c to 200 (my eyes!)
-void Picture::adjustContrast(int c){
+void Picture::changeContrast(int c){
   double cFactor = (259.0*((double)c + 255.0)) / (255.0*(259.0 - (double)c));
   int r, g, b;
   for (int y = 0; y < height; y++) {
