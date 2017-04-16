@@ -276,6 +276,8 @@ void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, i
 
 
 void Picture::changeHue(int value){
+	if(value == 0)
+		return;
   //restricts input to a closed interval (slider)
   if(value > 360 || value < -359){
     //cout << "INVALID" << endl;
@@ -305,8 +307,10 @@ void Picture::changeHue(int value){
   }
 }
 
-//Can only go from 0 to 1, the value is a percentage so must be inbetween -1 and 1.
+//Final saturation can only go from 0 to 1, input value is integer percentage from -100 to 100.
 void Picture::changeSat(int value) {
+  if(value == 0)
+	return;
   if(value > 100 || value < -100){
     cout << "INVALID" << endl;
     return;
@@ -337,8 +341,9 @@ void Picture::changeSat(int value) {
 }
 
 
-//can read in either a double directly or take in an int and process it inside, makes no difference
 void Picture::changeBright(int value){
+	if(value == 0)
+	return;
   if(value > 100 || value < -100){
   	//WILL MOST LIKELY HAVE TO TAKE OUT 
     //cout << "INVALID" << endl;
@@ -375,6 +380,8 @@ void Picture::changeBright(int value){
 //int value is to be between the values of -255 to 255. "-" reduces contrast,
 // "+" increases it
 void Picture::changeContrast(int value){
+if(value == 0)
+	return;
   if(value < -255 || value > 255){
     //cout << "Error" << endl;
     return;
@@ -412,6 +419,8 @@ int Picture::clamp(int p){
 
 
 void Picture::changeExposure(int value) {
+	if(value == 0)
+	return;
   if(value > 100 || value < -100){
     //cout << "INVALID" << endl;
     return;
@@ -442,6 +451,7 @@ void Picture::changeExposure(int value) {
 }
 
 void Picture::changeHighlights(int value) {
+if(value == 0) return;
   if(value > 100 || value < -100){
     cout << "INVALID" << endl;
     return;
@@ -472,6 +482,7 @@ void Picture::changeHighlights(int value) {
 }
 
 void Picture::changeShadows(int value) {
+  if(value == 0) return;
   if(value > 100 || value < -100){
     cout << "INVALID" << endl;
     return;
@@ -503,6 +514,7 @@ void Picture::changeShadows(int value) {
 
 
 void Picture::changeTemp(int value){
+	if(value == 0) return;
   if(value > 255 || value < -255){
     //cout << "Error" << endl;
     return;
