@@ -10,12 +10,14 @@ Picture::Picture() {}
 /*  Function to open up a PNG picture file and read in its information. This met
  * hod takes in a character array as input to represent the name of the file tha
  * t is to be
-opened (the input must be a character array since the libpng libra
+opened  (the input must be a character array since the libpng libra
  * ry is written in C and cannot handle strings). The function contains no outpu
  * t. It simply opens the PNG
 file, and creates a Picture object based on the in
  * formation inside the file. 
  */
+
+
 void Picture::readPNGFile(char * fileName) {
     
   // Create an array to read in the first 8 bits of a png file. The first 8 bits represents the header portion for a PNG picture.
@@ -139,6 +141,7 @@ void Picture::readPNGFile(char * fileName) {
 
   fclose(x);
 } 
+
 
 /* This function opens up a file and writes a PNG file to it. The method takes in a character array as input that will be used to represent the file name (a
 character array must be used instead of a string because libpng is written in C and cannot function with strings). The function contains no output.*/
@@ -280,190 +283,299 @@ void Picture::convertToHSV(int r, int g, int b, double &h, double &s, double &v)
   	h = hue;
   	s = sat;
   	v = val;
-}
 
-//look up conversion from hsv to rgb for exact formula
-void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, int &b){
-  double c = val * sat;
-  double mod_factor = hue / 60.0;
-  while(mod_factor >= 2.0)
-    mod_factor = mod_factor - 2.0;
-  while(mod_factor <= 0.0)
-    mod_factor = mod_factor + 2.0;
-  double x = c * (1 - abs(mod_factor - 1));
-  double m = val - c;
-  
-  double rP, gP, bP;
-  if((0.0 <= hue && hue < 60.0)){
-      rP = c;
-      gP = x;
-      bP = 0;
-  }
-  else if(60.0 <= hue && hue < 120.0){
-      rP = x;
-      gP = c;
-      bP = 0;
-  }
-  else if(120.0 <= hue && hue < 180.0){
-      rP = 0;
-      gP = c;
-      bP = x;
-  }
-  else if(180.0 <= hue && hue < 240.0){
-      rP = 0;
-      gP = x;
-      bP = c;
-  }
-  else if(240.0 <= hue && hue < 300.0){
-      rP = x;
-      gP = 0;
-      bP = c;
-  }
-  else if(300.0 <= hue && hue < 360.0){
-      rP = c;
-      gP = 0;
-      bP = x;
-  }
-  
-  r = (int)((rP + m) * 255.0);
-  g = (int)((gP + m) * 255.0);
-  b = (int)((bP + m) * 255.0);
+  	return;
 }
 
 
+/* Function for converting the values from hue-saturation-value format to red-green-blue format. The function takes in three double values to represent the values
+hue, saturation, and values. The function also takes in three integer address so that the values of red, green, and blue can be changed. The method contains no outputs. */
+void Picture::convertToRGB(double hue, double sat, double val, int &r, int &g, int &b)
+{
+	// Perform calculations to convert the values from hue, saturation, and value to red, green, and blue
+  	double c = val * sat;
+  	double mod_factor = hue / 60.0;
+  	while(mod_factor >= 2.0)
+    	mod_factor = mod_factor - 2.0;
+  	while(mod_factor <= 0.0)
+    	mod_factor = mod_factor + 2.0;
+
+  	double x = c * (1 - abs(mod_factor - 1));
+
+  	double m = val - c;
+  
+  	// Initalize variables to hold the values for red, green, and blue information
+  	double rP, gP, bP;
+
+ 	// Based on the value of hue, determine which values should be assigned to red, green, or blue
+  	if((0.0 <= hue && hue < 60.0)){
+      	rP = c;
+      	gP = x;
+      	bP = 0;
+  	}
+  	else if(60.0 <= hue && hue < 120.0){
+      	rP = x;
+      	gP = c;
+      	bP = 0;
+  	}
+  	else if(120.0 <= hue && hue < 180.0){
+      	rP = 0;
+      	gP = c;
+      	bP = x;
+ 	 }
+  	else if(180.0 <= hue && hue < 240.0){
+      	rP = 0;
+      	gP = x;
+      	bP = c;
+  	}
+  	else if(240.0 <= hue && hue < 300.0){
+      	rP = x;
+      	gP = 0;
+      	bP = c;
+  	}
+  	else if(300.0 <= hue && hue < 360.0){
+      	rP = c;
+      	gP = 0;
+      	bP = x;
+  	}
+  
+  	// Assign the calculated values of red, green, blue back to their memory address
+  	r = (int)((rP + m) * 255.0);
+  	g = (int)((gP + m) * 255.0);
+  	b = (int)((bP + m) * 255.0);
+
+  	return;
+}
+
+
+/* Function to change the hue of a picture. The input of the function is an integer, which represents the how much the hue for the picture should be changed.
+The function contains no output. The interface linked with this algorithm is restricted to pass in a value between -359 and 359.*/ 
 void Picture::changeHue(int value){
-  //restricts input to a closed interval (slider)
-  if(value > 360 || value < -359){
-    //cout << "INVALID" << endl;
-    return;
-  }
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      h = h + (double)value;
-      //fixes the max and min values of the possible hue. anything that may go over is stopped exactly at the max.
-      if(h > 360.0)
-        h = 359.0;
-      if(h < 0)
-        h = 0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
-}
 
-//Can only go from 0 to 1, the value is a percentage so must be inbetween -1 and 1.
-void Picture::changeSat(int value) {
-  if(value > 100 || value < -100){
-    cout << "INVALID" << endl;
-    return;
-  }
-  double valdecimal = (double)value / 100.0;
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      s = s + valdecimal;
-      //anything set over the possible max is made to be exactly at the min/max, which in this case is 0 and 1.
-      if(s > 1.0)
-        s = 1.0;
-      if(s < 0)
-        s = 0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
+	// If the value passed in is 0, the hue does not need to be altered
+  	if(value == 0)
+  		return; 
+
+  	// Initalize variables to hold the red-green-blue values, as well as the hue-saturation-value values
+  	int r, g, b;
+  	double h, s, v;
+
+  	// Establish a loop to parse through each row of the pixels in the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Store the value for each row of the picture as the loop iterates
+    	png_byte* row = row_pointers[y];
+
+    	// Establish a second loop to iterate through each column pixel value
+    	for (int x = 0; x < width; x++) 
+    	{
+    		// Extract the color values of each pixel four values at a time
+      		png_byte* ptr = &(row[x*4]);
+      		r = ptr[0];   // The red color value is stored within the first index 
+      		g = ptr[1];   // The green color value is stored within the second index
+      		b = ptr[2];   // The blue color value is stored within the third index
+
+      		convertToHSV(r, g, b, h, s, v);   // Covert the red-green-blue values to hue-saturation-value
+
+      		// Adjust the hue based on the value passed into the function
+      		h = h + (double)value;
+
+      		// Check if the new value of hue is within the valid range for hue (The range of hue values exists between 0 and 360)
+      		// If the new hue value is above 360, reset it to 359 (the highest possible value for hue)
+      		if(h > 360.0)
+        		h = 359.0;   
+        	// If the new value for hue is negative, rest it to 0
+      		if(h < 0)
+        		h = 0;
+
+      		convertToRGB(h, s, v, r, g, b);   // Covert the hue-saturation-value information back to red-blue-green based on the new hue value
+
+      		// Reset the value of red, blue, green with the newly calculated hue value for each pixel within the picture
+      		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+    	}
+  	}
+
+  return;
 }
 
 
-//can read in either a double directly or take in an int and process it inside, makes no difference
-void Picture::changeBright(int value){
-  if(value > 100 || value < -100){
-  	//WILL MOST LIKELY HAVE TO TAKE OUT 
-    //cout << "INVALID" << endl;
-    return;
-  }
-  double valdecimal = (double)value / 100.0;
-  int r, g, b;
-  double h, s, v;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
-      convertToHSV(r, g, b, h, s, v);
-      v = v + valdecimal;
-      //anything set over the possible max is made to be exactly at the max instead of over/under the max.
-      if(v > 1.0)
-        v = 1.0;
-      if(v <= 0.0)
-        v = 0.0;
-      convertToRGB(h, s, v, r, g, b);
-      ptr[0] = r;
-      ptr[1] = g;
-      ptr[2] = b;
-    }
-  }
-	
+/* Function to change the saturation of a picture. The function receives an integer as input to represent how much the saturation of the picture is to be changed.
+The method contains no output. Saturation is represented as a percentage. Based on the interface integrated with this class, the value passed in will be between 
+-100 and 100. */
+void Picture::changeSat(int value) 
+{
+	// If the value passed in is 0, no changes need to be made
+  	if(value == 0)
+  		return;
+
+  	double valdecimal = (double)value / 100.0;   // Convert the value of the integer passed in into a decimal between 0 and 1
+
+  	// Initalize variables to hold the red-green-blue values, as well as the hue-saturation-value values
+  	int r, g, b;
+  	double h, s, v;
+
+  	// Loop through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+    	png_byte* row = row_pointers[y];   // Retreive the information of each row as the loop iterates
+
+    	// Create a second loop to iterate through each pixel within each row
+    	for (int x = 0; x < width; x++) 
+    	{
+    		// Retreive the color values of each pixel by reading in the next four values
+      		png_byte* ptr = &(row[x*4]);
+
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+
+      		convertToHSV(r, g, b, h, s, v);   // Convert the red-blue-green values to hue-saturation-value
+
+      		s = s + valdecimal;   // Update the value of saturation based on the input passed in
+     
+      		// The value of saturation is a percentage between a range of 0 and 1
+      		// If the new value of saturation is above 1, reset its value to the highest possible saturation value
+      		if(s > 1.0)
+        		s = 1.0;
+        	// If the new value of saturation is negative, reset its value to the lowest possible saturation value
+      		if(s < 0)
+        		s = 0;
+
+        	// Convert the hue-saturation-value information (with the new value for saturation) back to red-green-blue
+      		convertToRGB(h, s, v, r, g, b);   
+     		
+     		// Reassign the values of red, green, and blue for each pixel based on the newly calculated saturation
+     		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+   		}
+  	}
+
+  	return;
 }
 
 
-//this method will adjust the contrast
-//int value is to be between the values of -255 to 255. "-" reduces contrast,
-// "+" increases it
-void Picture::changeContrast(int value){
-  if(value < -255 || value > 255){
-    //cout << "Error" << endl;
-    return;
-  }
-  double cFactor = (259.0*((double)value + 255.0)) / (255.0*(259.0 - (double)value));
-  int r, g, b;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      r = ptr[0];
-      g = ptr[1];
-      b = ptr[2];
+/* Function to change the brightness of a picture. The method receives an integer to represent the value relating to how much the brightness needs to be adjusted.
+The function contains no output. The value range of brightness is a percentage between -100 and 100. The interface integrated with this class is restricted to pass
+in a value within -100 and 100.*/
+void Picture::changeBrightness(int value)
+{
+	// If the value passed in is zero, nothing needs to be adjusted
+ 	if(value == 0)
+ 		return;
+
+ 	// Convert the value of the integer passed in to a value between 0 and 1
+  	double valdecimal = (double)value / 100.0;
+
+  	// Initalize variables to represent the red-green-blue values as well as the hue-saturation-value values
+  	int r, g, b;
+  	double h, s, v;
+
+  	// Loop to iterate through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Retreive the information from each row as the loop iterates
+    	png_byte* row = row_pointers[y];
+    	
+    	// Second loop to iterate through the column values of the picture and retrieve the x,y value of each pixel
+    	for (int x = 0; x < width; x++) 
+    	{
+      		// Retreive the color values of each pixel by reading in the next four values
+      		png_byte* ptr = &(row[x*4]);
+
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+
+      		convertToHSV(r, g, b, h, s, v);   // Convert the red-green-blue values to hue-saturation-value values
+      		
+      		v = v + valdecimal;   // Adjust the value information of each pixel to change the brightness of the picture
       
-      r = (int)(cFactor*(r - 128.0) + 128);
-      g = (int)(cFactor*(g - 128.0) + 128);
-      b = (int)(cFactor*(b - 128.0) + 128);
+      		// The value range of brightness is a percentage between 0 and 1 
+      		// If the newly calculated value is greater than 1, reset it to the highest possible brightness value
+      		if(v > 1.0)
+        		v = 1.0;
+        	// If the newly calculated value is lower than 0, reset it to the lowest possible brightness value
+      		if(v <= 0.0)
+        		v = 0.0;
       
-      ptr[0] = clamp(r);
-      ptr[1] = clamp(g);
-      ptr[2] = clamp(b);
+      		// Convert the hue-saturation-values information (with the newly calculated brightness value) back to red-green-blue 
+      		convertToRGB(h, s, v, r, g, b);
       
-    }
-  }
+      		// Reassign the values of red, green, blue for each pixel with the newly calculated brightness value
+      		ptr[0] = r;
+      		ptr[1] = g;
+      		ptr[2] = b;
+    	}
+  	}
+
+  	return;	
 }
 
 
-int Picture::clamp(int p){
-  if(p < 0)
-    return 0;
-  else if(p > 255)
-    return 255;
-  return p;
+/* Function to adjust the contrast of a picture. The method retreives an integer as input to represent how much the contrast value is to be changed. The function
+contains no output. The value range of contrast exists between -255 and 255. The interface interlaced with this algorithm is restricted to only pass in a value 
+between -255 and 255.*/
+void Picture::changeContrast(int value)
+{
+  	if(value == 0)
+  		return;
+  
+  	// Formula that calculates the value for how much the contrast should be adjusted
+  	double cFactor = (259.0*((double)value + 255.0)) / (255.0*(259.0 - (double)value));
+
+  	int r, g, b;   // Initalize variables to hold the red, green, and blue values
+
+  	// Loop to iterate through each row within the picture
+  	for (int y = 0; y < height; y++) 
+  	{
+  		// Retrieve information concerning each individual row as the loop iterates
+    	png_byte* row = row_pointers[y];
+
+    	// Additional loop to iterate through each pixel within each loop
+    	for (int x = 0; x < width; x++) 
+    	{
+      		// Retreive the color values of each pixel by reading in the next four values
+      		png_byte* ptr = &(row[x*4]);
+
+      		r = ptr[0];   // The first index represents the red color 
+      		g = ptr[1];   // The second index represents the green color
+      		b = ptr[2];   // The blue index represents the blue color
+      
+      		// Change the red-green-blue value of each pixel based on the contrast factor
+      		r = (int)(cFactor*(r - 128.0) + 128);
+      		g = (int)(cFactor*(g - 128.0) + 128);
+      		b = (int)(cFactor*(b - 128.0) + 128);
+      	
+      		// Reassign the values of red-green-blue information for each pixel with the newly calculated contrast value
+      		// Likewise, clamp each value between 0 and 255.
+      		ptr[0] = clamp(r);
+      		ptr[1] = clamp(g);
+      		ptr[2] = clamp(b);
+    	}
+  	}
+
+  	return;
+}
+
+
+/* Function used for restricting a value within a specific range. The function takes in a integer as input as the value used to check if it is within a certain range.
+The function outputs an integer of the new value if the value passed in is not within the range, or the same value if it is within the range. */
+int Picture::clamp(int p)
+{
+	/* The range of this function is between 0 and 255 */ 
+
+	// If the value passed in is negative, then reset it to the lowest possible value within the range
+  	if(p < 0)
+    	return 0;
+    // Else, if the value passed in is higher than 255, reset it to the highest possible value within the range
+  	else if(p > 255)
+    	return 255;
+    // Else, the value passed in is within the specific range and can be returned with no difference
+  	else
+  		return p;
 }
 
 
