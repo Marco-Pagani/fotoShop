@@ -26,15 +26,15 @@ public:
 	
 	void convertToHSV(int r, int g, int b, double& hue, double& sat, double& val);
 	void convertToRGB(double hue, double sat, double val, int& r, int& g, int& b);
-	
-	void changeBright(double brightVal);	//done
-	void adjustContrast(int c);				//done
-	void changeExpo(int ex);
-	void changeHighlights(int value);		//done
-	void changeShadows(int value);			//done
-	void changeSat(double satVal);			//done
-	void changeHue(int hueVal);				//done
-	void changeTemp(int value);			//done
+
+	void changeBrightness(double brightVal);	
+	void changeContrast(int c);			
+	void changeExposure(int ex);
+	void changeHighlights(int value);		
+	void changeShadows(int value);			
+	void changeSaturation(double satVal);			
+	void changeHue(int hueVal);				
+	void changeTempurature(int value);			
 };
 
 #endif
