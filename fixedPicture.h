@@ -33,7 +33,7 @@ public:
 	void shadows(int value);
 	void saturation(int value);
 	void hue(int value);
-	void warmth(int value);	
+	void temperature(int value);	
 	
 	void verticalFlip();
 	void rotateLeft();
