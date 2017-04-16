@@ -792,113 +792,128 @@ void Picture::changeTemperature(int value)
 }
 
 
+/* Function used to perform a vertical flip upon a picture. The function contains no input and no output. It simply readjusts the positions of the pixels so that the
+picture is flipped virtically.*/
+void Picture::verticalFlip()
+{
+	// Initalize variable to temporary hold values as the picture is flipped
+  	png_bytep temp;
 
+  	// Loop to iterate through half of the rows in the picture
+  	for(int y = 0; y < height/2; y++) 
+  	{
+  		// Readjust the pixel locations within the picture
+    	temp = row_pointers[y];
+    	row_pointers[y] = row_pointers[height-1-y];
+    	row_pointers[height-1-y] = temp;
+  	}
 
-void Picture::verticalFlip(){
-  png_bytep temp;
-  for(int y = 0; y < height/2; y++) {
-    temp = row_pointers[y];
-    row_pointers[y] = row_pointers[height-1-y];
-    row_pointers[height-1-y] = temp;
-  }
+  	return;
 }
 
-void Picture::rotateLeft(){
-  //Using a temporary variable to swap the width and height values, as new dimensions must be made
-  int temp;
-  temp = width;
-  width = height;
-  height = temp;
+
+/* Function to rotate a picture to the left. The function contains no input and no output. The function simply allocates new memory for a new picture with reversed
+dimensions so that the picture can be rotated.*/
+void Picture::rotateLeft()
+{
+	// Initalize a variable to be used to temporarily hold values while the picture is rotated
+  	int temp;
+
+  	// Reverse the width/height dimensions of the picture
+  	temp = width;
+  	width = height;
+  	height = temp;
   
-  //Creates a new array of png_bytes to replace previous, using the new hieght and widths
-  png_bytep * copy_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
-  for(int i = 0; i < height; i++){
-    copy_pointers[i] = (png_byte*)malloc(width * 4);//The malloc in the read method is essentially this
-  }
+  	// Allocate new memory to hold a picture with reversed dimensions
+  	// Dynamically allocate memory for a two-dimensional array to store each pixel value
+  	png_bytep * copy_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+  	for(int i = 0; i < height; i++)
+    	copy_pointers[i] = (png_byte*)malloc(width * 4);
+ 
+  	// Parse through each individual row within a picture
+  	for(int y = 0; y < height; y++) 
+  	{
+  		// Retreive the row information as the loop is iterated
+    	png_bytep copy = copy_pointers[y];
+
+    	// Parse through each individual column within a picture
+    	for(int x = 0; x < width; x++) 
+    	{
+   			// Copy the individual pixels from the original picture to the new, rotated picture
+      		png_bytep row = row_pointers[x];
+      		png_bytep px = &(row[y*4]);
+      		png_bytep pc = &(copy[x*4]);
+      		pc[0] = px[0];
+      		pc[1] = px[1];
+	      	pc[2] = px[2];
+    	  	pc[3] = px[3];
+    	}   
+  	}
   
+  	// Free the memory allocated of the previous, unrotated image
+  	for(int y = 0; y < width; y++)
+    	free(row_pointers[y]);
+  	free(row_pointers);
   
-  for(int y = 0; y < height; y++) {
-    png_bytep copy = copy_pointers[y];
-    for(int x = 0; x < width; x++) {
-      png_bytep row = row_pointers[x];
-      png_bytep px = &(row[y*4]);
-      png_bytep pc = &(copy[x*4]);
-      pc[0] = px[0];
-      pc[1] = px[1];
-      pc[2] = px[2];
-      pc[3] = px[3];
-    }   
-  }
+  	// Reassign the row pointers for the Picture object to the new, rotated picture
+  	row_pointers = copy_pointers;
   
-  for(int y = 0; y < width; y++) {
-    free(row_pointers[y]);
-  }
-  free(row_pointers);
-  
-  row_pointers = copy_pointers;
-  
-  verticalFlip();
+  	// Flip the picture virtically to finish the rotation
+	verticalFlip();
+
+	return;
 }
 
-void Picture::rotateRight(){
-  //reversing dimensions of newly oriented image
-  int temp;
-  temp = width;
-  width = height;
-  height = temp;
-  
-  //makes a copy of the png_byte array to store rotated data
-  png_bytep * copy_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
-  for(int i = 0; i < height; i++){
-    copy_pointers[i] = (png_byte*)malloc(width * 4);
-  }
-  
-  
-  for(int y = height-1; y >= 0; y--) {
-    png_bytep copy = copy_pointers[y];
-    for(int x = width-1; x >= 0; x--) {
-      png_bytep row = row_pointers[width-x-1];
-      png_bytep px = &(row[(height-1-y)*4]);
-      png_bytep pc = &(copy[x*4]);
-      pc[0] = px[0];
-      pc[1] = px[1];
-      pc[2] = px[2];
-      pc[3] = px[3];
-    }   
-  }
-  
-  for(int y = 0; y < width; y++) {
-    free(row_pointers[y]);
-  }
-  free(row_pointers);
-  
-  row_pointers = copy_pointers;
-  
-  verticalFlip();  
-}
 
-void Picture::horizontalFlip(){
-  rotateLeft();
-  rotateLeft();
-  verticalFlip();
-}
+/* Function to rotate a picture to the right. The function contains no input and no output. The function simply allocates new memory for a new picture with reversed
+dimensions so that the picture can be rotated.*/
+void Picture::rotateRight()
+{
+  	// Initalize a variable to be used to temporarily hold values while the picture is rotated
+  	int temp;
 
-int main(){
-  char fileName[100];  //file name is put in here.  Must be char * because libpng is in c.
-  cout << "Please enter a file name to open: ";
-  cin >> fileName;
-  Picture test(fileName);
+  	// Reverse the width/height dimensions of the picture
+  	temp = width;
+  	width = height;
+  	height = temp;
   
-  //Do stuff here
-  test.changeTemp(40);
-  test.rotateLeft();
-  test.changeHue(200);
-  test.changeContrast(10);
-  //etc.
+  	// Allocate new memory to hold a picture with reversed dimensions
+  	// Dynamically allocate memory for a two-dimensional array to store each pixel value
+  	png_bytep * copy_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+  	for(int i = 0; i < height; i++)
+    	copy_pointers[i] = (png_byte*)malloc(width * 4);
   
-  //Writes to output file
-  cout << "Please enter a file name to save the file: ";
-  cin >> fileName;
-  test.writePNGFile(fileName);
-  return 0;
+  	// Parse through each individual row within a picture
+  	for(int y = height-1; y >= 0; y--) 
+  	{
+  		// Retreive the row information as the loop is iterated
+    	png_bytep copy = copy_pointers[y];
+
+    	// Parse through each individual column within a picture
+    	for(int x = width-1; x >= 0; x--) 
+    	{
+    		// Copy the individual pixels from the original picture to the new, rotated picture
+      		png_bytep row = row_pointers[width-x-1];
+      		png_bytep px = &(row[(height-1-y)*4]);
+      		png_bytep pc = &(copy[x*4]);
+      		pc[0] = px[0];
+      		pc[1] = px[1];
+      		pc[2] = px[2];
+      		pc[3] = px[3];
+    	}   
+  	}
+  
+
+  	// Free the memory allocated of the previous, unrotated image
+  	for(int y = 0; y < width; y++) 
+    	free(row_pointers[y]);
+  	free(row_pointers);
+
+  	// Reassign the row pointers for the Picture object to the new, rotated picture  
+  	row_pointers = copy_pointers;
+  
+  	// Flip the picture virtically to finish the rotation
+  	verticalFlip();  
+
+  	return;
 }
