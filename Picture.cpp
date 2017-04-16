@@ -404,7 +404,7 @@ void Picture::changeHue(int value){
 /* Function to change the saturation of a picture. The function receives an integer as input to represent how much the saturation of the picture is to be changed.
 The method contains no output. Saturation is represented as a percentage. Based on the interface integrated with this class, the value passed in will be between 
 -100 and 100. */
-void Picture::changeSat(int value) 
+void Picture::changeSaturation(int value) 
 {
 	// If the value passed in is 0, no changes need to be made
   	if(value == 0)
@@ -762,21 +762,33 @@ void Picture::changeShadows(int value)
 }
 
 
+/* Function to change the temperature of a picture. The function retreives an integer as input to represent the value for which the temperature should be changed. 
+The method contains no output. The value range of temperature is between -255 and 255. The interfact interlocked with this class is not to input a value that is 
+not within -255 and 255.*/
+void Picture::changeTemperature(int value)
+{
+	// If the value passed in is zero, the temperature for the picture is not to be changed
+  	if(value == 0)
+  		return;
+	
+	// Loop to iterate through each row in the picture
+	for (int y = 0; y < height; y++) 
+	{
+		// Retreives the information concerning each individual row as the loop iterates
+    	png_byte* row = row_pointers[y];
+    
+    	// Additional loop to iterate through each column to retreive each individual pixel
+    	for (int x = 0; x < width; x++) 
+    	{
+    		// Retreive the color values of each pixel by reading in the next four values (representing red-green-blue-alpha)
+      		png_byte* ptr = &(row[x*4]);
 
-void Picture::changeTemp(int value){
-  if(value > 255 || value < -255){
-    //cout << "Error" << endl;
-    return;
-  }
-  int r, g, b;
-  for (int y = 0; y < height; y++) {
-    png_byte* row = row_pointers[y];
-    for (int x = 0; x < width; x++) {
-      png_byte* ptr = &(row[x*4]);
-      ptr[0] = clamp(ptr[0] + value);
-      ptr[2] = clamp(ptr[2] - value);
-    }
-  }
+      		ptr[0] = clamp(ptr[0] + value);   // Changes the value of the red value based on the input passed in
+      		ptr[2] = clamp(ptr[2] - value);   // Changes the value of the blue value based on the input passed in
+    	}
+  	}
+
+  	return;
 }
 
 
