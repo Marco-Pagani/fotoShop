@@ -70,6 +70,12 @@ public:
     void rotateRight();
     void horizontalFlip();
 
+    void resetAllSliders();
+    void hideAllSliders();
+    void setAllSlidersVisible();
+    void setRangeBrightnessSliders();
+    void setRangeColorSliders();
+
 
 
 
@@ -88,6 +94,12 @@ private:
     int intExposure;
     int intHighlight;
     int intShadow;
+    int intHue;
+    int intSaturation;
+    int intTemperature;
+
+    bool lightButtonClicked;
+
     int width, height;
     png_byte color_type;
     png_byte bit_depth;
