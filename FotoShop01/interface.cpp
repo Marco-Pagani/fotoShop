@@ -160,11 +160,12 @@ Interface::Interface():QWidget()
 
     // intializing undo Qlabel and placing it into the frame
     undo = new QLabel(this);
-    undo->move(875,720 - 38);
+    undo->move(1075,720 - 38);
     undo->resize(215,70 - 32);
     undo->setStyleSheet("QLabel { background-color : rgb(20,37,23);}");
+    undo->setCursor(Qt::ClosedHandCursor);
 
-    addIconToLabel("/home/josh/fotoShop term project/FotoShop01/undo.png",undo);
+    addIconToLabel("/home/josh/fotoShop term project/FotoShop01/okIcon.png",undo);
 
     //Image loaded by user located in the middle of the frame. This is label will contain the image we
     //will edit
@@ -438,7 +439,7 @@ void Interface::loadImage()
     // exception handling. if file loaded is not a JPG or png image.
     try
     {
-        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "/home", tr("Images (*.png *.jpg)"));
+        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "/home", tr("Images (*.png)"));
         QImage img(fileName);
         img2 = img.scaled(editImage->width(), editImage->height(), Qt::KeepAspectRatio);
         editImage->setPixmap(QPixmap::fromImage(img2));
@@ -565,8 +566,11 @@ void Interface::mousePressEvent(QMouseEvent *ev)
 
     // the undo button
     else if(inLabel(undo,mouseX,mouseY)){
-        writeImage();
-        undo->setStyleSheet("border: 2px solid rgb(58, 58, 58)");
+        if(!img2.isNull()){
+            writeImage();
+        }
+
+
         resetAllLabel("undo");
     }
 
